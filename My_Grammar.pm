@@ -4,18 +4,17 @@ our $dsl = <<'END_OF_DSL';
 :default ::= action => do_print
 lexeme default = latm => 1
 
-:start ::= Script 
-Script ::= Number comma Number action => do_printNr 
-		  || Any 
+:start ::= _Script 
+_Script ::= Number ',' Number 
+		  || Any
           
 
 Any ::= anyToken action => do_printAny
        | anyToken Any action => do_printAny
 anyToken ~ [\s\S]
-comma ~ [',']
-:lexeme ~ comma priority => 10
-:lexeme ~ <anyToken> priority => -10
-:lexeme ~ Number priority => 10 
+
+:lexeme ~ <anyToken> priority => -1
+
 Number ~ digits
 digits ~ [\d]+
 :discard ~ whitespace
