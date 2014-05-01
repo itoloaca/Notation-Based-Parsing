@@ -5,20 +5,11 @@ our $dsl = <<'END_OF_DSL';
 lexeme default = latm => 1
 
 :start ::= _Script 
-_Script ::= Number ',' Number 
-		  || Any
-          
 
-Any ::= anyToken action => do_printAny
-       | anyToken Any action => do_printAny
-anyToken ~ [\s\S]
-
-:lexeme ~ <anyToken> priority => -1
-
-Number ~ digits
-digits ~ [\d]+
-:discard ~ whitespace
-whitespace ~ [\s]+
+_Script ::= moB
+_Script ::= moE        
+moB ~ '<m:mo>'
+moE ~ '<m:mrow>'
 
 END_OF_DSL
 
