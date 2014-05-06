@@ -21,8 +21,10 @@ foreach (@$ref) {
 	$dsl = $dsl . $_ . "\n";
 }
 
-# print $dsl;
+#print $dsl;
 
+
+############################################################
 ############################################################
 
 use Marpa::R2;
@@ -30,8 +32,8 @@ use My_Actions;
 use My_Grammar;
 
 #Initialize grammar#
-my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
-#my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
+#my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
 

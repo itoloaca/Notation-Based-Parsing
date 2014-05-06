@@ -18,7 +18,7 @@ sub do_print {
 	print Dumper(\$_[0]);
 	shift;
 	print join("\n",@_). "\n";
-	return $_[0] + $_[2];
+	return $_[0];
 }
 
 sub do_printNr {
