@@ -1,11 +1,17 @@
- #!/usr/local/bin/perl
+#!/usr/local/bin/perl
 
-#POST REQUEST##############################################
+use 5.010;
 use strict;
 use warnings;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 use JSON;
+use Data::Dumper; 
+use English qw( -no_match_vars );
+use Marpa::R2;
+
+
+#POST REQUEST##############################################
 
 require LWP::UserAgent;
 my $ua = LWP::UserAgent->new;
@@ -22,7 +28,6 @@ foreach (@$ref) {
 }
 
 #print $dsl;
-
 
 ############################################################
 ############################################################
@@ -44,11 +49,36 @@ my $input = join('', <$input_fh>);
 #print "Grammar input:\n" . $input . "\n";
 
 #Feed the input to the grammar#
-$recce->read( \$input );
+my $length = length $input;
+my $start = 31; #default - zero 
+my $pos = $recce->read( \$input, $start, $length - $start );
+my $actual_events = [];
 
-#Print result#
-my $value_ref = $recce->value;
-my $value = $value_ref ? ${$value_ref} : 'No Parse';
+READ: while (1) {
+ 
+  my @current_events = ();
+  EVENT:
+  for my $event ( @{ $recce->events() } ) {
+    my ($name) = @{$event};
+    push @current_events, $name;
+  }
+ if (@current_events) {
+      push @$actual_events, [$start, $pos, @current_events];
+  }
+  print "Actual events: ",Dumper($actual_events);
 
-print "Parse result:\n". $value . "\n\n";
+  last READ if $pos >= $length;
+  print $pos, " ", $length, " 123this\n\n";  
+  eval {$pos = $recce->resume(); };
+  last READ if $@;
+} ## end READ: while (1)
+
+my $value_ref = $recce->value();
+if ( not defined $value_ref ) {
+  die "No parse\n";
+}
+my $actual_value = ${$value_ref};
+print "Actual value: $actual_value\n";
+print "Actual events: ",Dumper($actual_events);
+
 

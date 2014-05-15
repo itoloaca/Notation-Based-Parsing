@@ -15,19 +15,25 @@ sub do_multiply {
 sub do_print {
 	
 	print "###############################\nUsing default action\n";
-	print Dumper(\$_[0]);
 	shift;
-	print join("\n",@_). "\n";
-	return $_[0];
+	my $result = join("\n",@_). "\n";
+	print $result;
+	return $result;
 }
+
+sub getString {
+	shift;
+	return join("",@_);
+}
+
 
 sub do_printNr {
 	
 	print "###############################\nUsing do_printNr\n";
-	print Dumper(\$_[0]);
 	shift;
-	print join("\n",@_). "\n";
-	return $_[0] + $_[2];
+	my $result = join("\n",@_). "\n";
+	print $result;
+	return $result;
 }
 
 sub do_printAny {
@@ -35,8 +41,15 @@ sub do_printAny {
 	print "###############################\nUsing do_printAny\n";
 	print Dumper(\$_[0]);
 	shift;
-	print join("\n",@_). "\n";
-	return $_[0] + $_[2];
+	my $result = join("\n",@_). "\n";
+	print $result;
+	return $result;
 }
 
+sub OK {
+	return 1;
+}
+sub NOT_OK {
+	return 0;
+}
 1; #required
