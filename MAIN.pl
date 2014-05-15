@@ -50,7 +50,7 @@ my $input = join('', <$input_fh>);
 
 #Feed the input to the grammar#
 my $length = length $input;
-my $start = 31; #default - zero 
+my $start = 0; #default - zero 
 my $pos = $recce->read( \$input, $start, $length - $start );
 my $actual_events = [];
 
@@ -68,7 +68,7 @@ READ: while (1) {
   print "Actual events: ",Dumper($actual_events);
 
   last READ if $pos >= $length;
-  print $pos, " ", $length, " 123this\n\n";  
+  # print $pos, " ", $length, " 123this\n\n";  
   eval {$pos = $recce->resume(); };
   last READ if $@;
 } ## end READ: while (1)
