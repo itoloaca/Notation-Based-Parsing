@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
-
-use 5.010;
+use utf8;
+use 5.014;
 use strict;
 use warnings;
 use LWP::UserAgent;
@@ -9,9 +9,10 @@ use JSON;
 use Data::Dumper; 
 use English qw( -no_match_vars );
 use Marpa::R2;
-
-
-#POST REQUEST##############################################
+use My_Actions;
+use My_Grammar;
+use Encode;
+#POST REQUEST##############################################2
 
 require LWP::UserAgent;
 my $ua = LWP::UserAgent->new;
@@ -27,17 +28,13 @@ foreach (@$ref) {
 	$dsl = $dsl . $_ . "\n";
 }
 
-#print $dsl;
-
+# print $dsl;
 ############################################################
 ############################################################
 
-use Marpa::R2;
-use My_Actions;
-use My_Grammar;
 
 #Initialize grammar#
-#my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+# my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
 my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
@@ -53,6 +50,7 @@ my $length = length $input;
 my $start = 0; #default - zero 
 my $pos = $recce->read( \$input, $start, $length - $start );
 my $actual_events = [];
+my %predicted = ();
 
 READ: while (1) {
  
@@ -62,13 +60,23 @@ READ: while (1) {
     my ($name) = @{$event};
     push @current_events, $name;
   }
- if (@current_events) {
-      push @$actual_events, [$start, $pos, @current_events];
+ 
+  for (@current_events) {
+    if (!/^predicted_/) { 
+      push @$actual_events, [$predicted{$_},$pos, $_];
+      delete $predicted{$_};
+    }
   }
-  print "Actual events: ",Dumper($actual_events);
+  for (@current_events) {
+    if (/^predicted_/) {
+      s/^predicted_//;
+      if (!defined($predicted{$_})) {
+        $predicted{$_} = $pos;
+      }
+    }
+  }
 
   last READ if $pos >= $length;
-  # print $pos, " ", $length, " 123this\n\n";  
   eval {$pos = $recce->resume(); };
   last READ if $@;
 } ## end READ: while (1)
