@@ -25,7 +25,7 @@ my $res = $ua->request($req);
 my $ref = decode_json($res->decoded_content);
 my $dsl = "";
 foreach (@$ref) {
-	$dsl = $dsl . $_ . "\n";
+	$dsl = $dsl . encode("UTF-8",$_) . "\n";
 }
 
 # print $dsl;
@@ -34,7 +34,7 @@ foreach (@$ref) {
 
 
 #Initialize grammar#
-# my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+#my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
 my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
@@ -63,19 +63,12 @@ READ: while (1) {
  
   for (@current_events) {
     if (!/^predicted_/) { 
-      push @$actual_events, [$predicted{$_},$pos, $_];
-      delete $predicted{$_};
+      my ($start_rule, $length_rule) = $recce->last_completed($_);
+      my $last_expression = $recce->substring($start_rule, $length_rule);
+      push @$actual_events, [$pos - length(decode("UTF-8",$last_expression)) +1,$pos+1, $_];
+      %predicted = ();
     }
   }
-  for (@current_events) {
-    if (/^predicted_/) {
-      s/^predicted_//;
-      if (!defined($predicted{$_})) {
-        $predicted{$_} = $pos;
-      }
-    }
-  }
-
   last READ if $pos >= $length;
   eval {$pos = $recce->resume(); };
   last READ if $@;
