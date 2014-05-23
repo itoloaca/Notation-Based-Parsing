@@ -15,20 +15,25 @@ use Encode;
 #POST REQUEST##############################################2
 
 require LWP::UserAgent;
+
+
+my $content = '{"a" : "b"}' ;
 my $ua = LWP::UserAgent->new;
 my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
-$req->header( 'Content-Type' => 'application/json' );
-$req->content( '{"a" : "b"}' );
+$req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
+$req->content(Encode::encode_utf8($content));
+$req->content_type("text/plain; charset='utf8'");
+
+
 
 my $res = $ua->request($req);
-
 my $ref = decode_json($res->decoded_content);
 my $dsl = "";
 foreach (@$ref) {
-	$dsl = $dsl . encode("UTF-8",$_) . "\n";
+#	$dsl = $dsl . $_ . "\n";
+  $dsl = $dsl . $_ .  "\n";
 }
 
-# print $dsl;
 ############################################################
 ############################################################
 
@@ -43,31 +48,29 @@ my $recce = Marpa::R2::Scanless::R->new(
 my $input_file = "input.omdoc";
 open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
 my $input = join('', <$input_fh>);
-#print "Grammar input:\n" . $input . "\n";
+$input = decode("UTF-8",$input);
 
+#print "Grammar input:\n" . $input . "\n";
 #Feed the input to the grammar#
 my $length = length $input;
 my $start = 0; #default - zero 
 my $pos = $recce->read( \$input, $start, $length - $start );
 my $actual_events = [];
-my %predicted = ();
 
 READ: while (1) {
  
   my @current_events = ();
+  
   EVENT:
   for my $event ( @{ $recce->events() } ) {
     my ($name) = @{$event};
     push @current_events, $name;
   }
- 
+
   for (@current_events) {
-    if (!/^predicted_/) { 
       my ($start_rule, $length_rule) = $recce->last_completed($_);
       my $last_expression = $recce->substring($start_rule, $length_rule);
-      push @$actual_events, [$pos - length(decode("UTF-8",$last_expression)) +1,$pos+1, $_];
-      %predicted = ();
-    }
+      push @$actual_events, [$pos - length($last_expression) +1,$pos+1, $_];
   }
   last READ if $pos >= $length;
   eval {$pos = $recce->resume(); };
