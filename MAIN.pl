@@ -30,7 +30,6 @@ my $res = $ua->request($req);
 my $ref = decode_json($res->decoded_content);
 my $dsl = "";
 foreach (@$ref) {
-#	$dsl = $dsl . $_ . "\n";
   $dsl = $dsl . $_ .  "\n";
 }
 
