@@ -7,7 +7,7 @@ use My_Grammar;
 #Initialize grammar#
 my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
 my $re = Marpa::R2::Scanless::R->new(
-    { grammar => $grammar, 
+    { grammar => $grammar, 	
     	# ranking_method => "highest_rule_only",
     	semantics_package =>  'My_Actions'} );
 
