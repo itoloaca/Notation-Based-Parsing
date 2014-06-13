@@ -15,4 +15,4 @@ my $nc = XML::LibXML::XPathContext->new($dom);
 $nc->registerNs("m","http://www.w3.org/1998/Math/MathML"); 
 my @math_elements = $nc->findnodes("//m:math"); 
 print scalar(@math_elements),"\n";
-print $math_elements[1];
+print join("\n\n", @math_elements);
