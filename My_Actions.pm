@@ -22,8 +22,14 @@ sub do_print {
 }
 
 sub getString {
-	shift;
-	return join("",@_);
+		shift;
+		my $res = "";
+		foreach (@_) {
+			if (defined $_) {
+				$res = $res . $_;
+			}
+		}
+		return $res;	
 }
 
 

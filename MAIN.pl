@@ -63,8 +63,6 @@ $input = decode("UTF-8",$input);
 #     $input = $input . $_}
 # print "\n\n\n";
 
-# $input = "<math FAKE TAG>" . $input . "</math FAKE TAG>";
-#print "Grammar input:\n" . $input . "\n";
 #Feed the input to the grammar#
 my $length = length $input;
 my $start = 0; #default - zero 
