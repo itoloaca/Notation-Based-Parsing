@@ -13,6 +13,18 @@ use My_Actions;
 #use My_Grammar;
 use Encode;
 use XML::LibXML;
+
+# Marpa Server Plugin : using the Marpa Grammar to parse MathML for notations
+#----------------------------------------------------------------------------
+# Toloaca Ion   <i.toloaca@jacobs-university.de>
+#----------------------------------------------------------------------------
+#   Purpose of the code: 
+# A post request is used to fetch the Marpa Grammar created in Scala from MMT
+# notations. Then the Grammar is passed to Marpa and the positions where the 
+# notations matched are recorded.
+#----------------------------------------------------------------------------
+
+
 #POST REQUEST##############################################
 
 require LWP::UserAgent;
@@ -49,8 +61,12 @@ my $recce = Marpa::R2::Scanless::R->new(
 my $input_file = "input.omdoc";
 open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
 my $input = join('', <$input_fh>);
-$input = decode("UTF-8",$input);
+#$input = decode("UTF-8",$input);
 
+print Dumper($dsl);
+#$input = decode("UTF-8",$input);
+#$input = encode("UTF-8",$input);
+print Dumper(\$input);
 #Harvest input from XML file# Input method 2
 # my $dom = XML::LibXML->load_xml(location=>"1311.1412.xhtml"); 
 # my $nc = XML::LibXML::XPathContext->new($dom); 
@@ -69,6 +85,7 @@ my $start = 0; #default - zero
 my $pos = $recce->read( \"$input", $start, $length - $start );
 my $actual_events = [];
 
+#Record positions where notations matched#
 READ: while (1) {
  
   my @current_events = ();
