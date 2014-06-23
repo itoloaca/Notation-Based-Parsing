@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+use Test::More;
 use utf8;
 use 5.014;
 use strict;
@@ -34,10 +35,10 @@ require LWP::UserAgent;
 my $content = '{"a" : "b"}' ;
 my $ua = LWP::UserAgent->new;
 my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
+isa_ok($req, 'HTTP::Request');   #TYPECHECK
 $req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
 $req->content(Encode::encode_utf8($content));
 $req->content_type("text/plain; charset='utf8'");
-
 
 
 my $res = $ua->request($req);
@@ -47,6 +48,7 @@ foreach (@$ref) {
   $dsl = $dsl . $_ .  "\n";
 }
 
+#isnt($dsl, "", "$dsl not empty");  #CHECK WHETHER THE GRAMMAR RECEIVED IS NOT EMPTY
 
 ############################################################
 ############################################################
@@ -58,51 +60,17 @@ my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
 
+isa_ok($grammar, 'Marpa::R2::Scanless::G'); #CHECKING TYPES
+isa_ok($recce, 'Marpa::R2::Scanless::R');
+
 ###########################################################################################
 #Get input from file# Input method 1 ####################################################
-my $input_file = "input.omdoc";
+my $input_file = "test_input.omdoc";
 open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
-my $input1 = join('', <$input_fh>);
-$input1 = decode("UTF-8",$input1);
+my $input = join('', <$input_fh>);
+$input = decode("UTF-8",$input);
 
-#Harvest input from XML file# Input method 2 ###############################################
-# use XML::LibXML;
-# my $dom = XML::LibXML->load_xml(location=>"1311.1412.xhtml"); 
-# my $nc = XML::LibXML::XPathContext->new($dom); 
-# $nc->registerNs("m","http://www.w3.org/1998/Math/MathML"); 
-# my @math_elements = $nc->findnodes("//m:math"); 
-# # print scalar(@math_elements),"\n";
-
-# my $index1 = 12;
-# my $input2 = $math_elements[$index1];
-
-
-
-#Harvest input from HTML file# Input method 3 ##################################################
-# use Mojo::DOM;
-# open FILEHANDLE, 'html_math_test.html' or die $!;
-# my $content1 = do { local $/; <FILEHANDLE> };
-# my $dom1 = Mojo::DOM->new($content1);
-# $dom1->xml(0); #enforce html 
-# my @math = $dom1->find('math')->each;
-# foreach (@math) {
-#   $_ = $_ -> to_string;
-#   $_ = decode("UTF-8", $_);
-# }
-# my $index2 = 1;
-# my $input3 = $math[$index2];
-
-#print scalar(@math) . "\n";
-#print Dumper($math[$index2]) . "\n\n";
-# foreach (@math){
-#   print Dumper(\$_);
-#   print $_ . "\n\n";
-# }
-
-
-###################################################################################################
-#Choose input 1-file, 2-xml, 3-html
-my $input = $input1;
+isnt($input,"",'Input not empty'); 
 
 #Feed the input to the grammar#
 my $length = length $input;
@@ -132,11 +100,17 @@ READ: while (1) {
 } ## end READ: while (1)
 
 my $value_ref = $recce->value();
+
+ok(defined $value_ref, 'value_ref defined');
+isnt($actual_events,[],'Event list not empty');
+
 if ( not defined $value_ref ) {
   die "No parse\n";
 }
+
 my $actual_value = ${$value_ref};
 print "Actual value:",Dumper(\$actual_value),"\n";
 print "Actual events: ",Dumper($actual_events);
 
 
+done_testing();

@@ -17,10 +17,10 @@ foreach (@math) {
 	$_ = decode("UTF-8", $_);
 }
  
-#print scalar(@math) . "\n";
 
 foreach (@math){
 	print Dumper(\$_);
 	print $_ . "\n\n";
 }
 
+print scalar(@math) . "\n";
