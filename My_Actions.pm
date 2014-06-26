@@ -20,7 +20,38 @@ sub do_print {
 	print $result;
 	return $result;
 }
+our $count = 0;
+sub getStringTEST {
+		shift;
 
+		my $res = "";
+		foreach (@_) {
+			if (defined $_) {
+				$res = $res . $_;
+			}
+		}
+		$count += 1;
+		print "In get string test /$res/\n";
+		return "<m"."$count".">".$res."</m"."$count".">";	
+}
+sub getNothing {
+	return "";
+}
+
+our $list = [];
+sub addToList {
+	shift;
+	print "In addToList\n";
+		my $res = "";
+		foreach (@_) {
+			if (defined $_) {
+				$res = $res . $_;
+			}
+		}
+		push @$list, $res;
+		return $list;
+
+}
 sub getString {
 		shift;
 		my $res = "";

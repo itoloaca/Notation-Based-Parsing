@@ -1,3 +1,4 @@
+
 #!/usr/local/bin/perl
 use Test::More;
 use utf8;
@@ -11,7 +12,7 @@ use Data::Dumper;
 use English qw( -no_match_vars );
 use Marpa::R2;
 use My_Actions;
-#use My_Grammar;
+use My_Grammar;
 use Encode;
 
 
@@ -55,8 +56,8 @@ foreach (@$ref) {
 
 
 #Initialize grammar#
-#my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
-my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
+my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+#my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
 
@@ -65,13 +66,12 @@ isa_ok($recce, 'Marpa::R2::Scanless::R');
 
 ###########################################################################################
 #Get input from file# Input method 1 ####################################################
-my $input_file = "test_input.omdoc";
+my $input_file = "input.omdoc";
 open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
 my $input = join('', <$input_fh>);
 $input = decode("UTF-8",$input);
-
 isnt($input,"",'Input not empty'); 
-
+print ($input . "\n");
 #Feed the input to the grammar#
 my $length = length $input;
 my $start = 0; #default - zero 
@@ -90,7 +90,15 @@ READ: while (1) {
   }
 
   for (@current_events) {
-      my ($start_rule, $length_rule) = $recce->last_completed($_);
+      my $suf =  substr $_, (length $_) - 2, 2;  
+      my $name = "";
+      if ($suf eq "_P" || $suf eq "_C") {
+        $name = substr $_,0,-2;
+      } else {
+        $name = $_;
+      }
+
+      my ($start_rule, $length_rule) = $recce->last_completed($name);
       my $last_expression = $recce->substring($start_rule, $length_rule);
       push @$actual_events, [$pos - length($last_expression) +1,$pos+1, $_];
   }
@@ -102,15 +110,18 @@ READ: while (1) {
 my $value_ref = $recce->value();
 
 ok(defined $value_ref, 'value_ref defined');
-isnt($actual_events,[],'Event list not empty');
+# isnt($actual_events,[],'Event list not empty');
 
 if ( not defined $value_ref ) {
   die "No parse\n";
 }
 
 my $actual_value = ${$value_ref};
-print "Actual value:",Dumper(\$actual_value),"\n";
 print "Actual events: ",Dumper($actual_events);
+print "Actual value:",Dumper($actual_value),"\n";
 
+
+my $value_ref = $recce->value();
+print "Actual value:",Dumper($actual_value),"\n";
 
 done_testing();
