@@ -13,5 +13,7 @@ use My_Actions;
 use My_Grammar;
 use Encode;
 
-my $s = "abcdef";
-print (0 && 0);
+ my @myNames = ('Larry', 'Curly');
+ my @moreNames = ('Moe', 'Shemp');
+ push(@myNames, @moreNames); 
+ print Dumper(\@myNames);

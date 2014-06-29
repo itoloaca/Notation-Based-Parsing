@@ -12,7 +12,7 @@ use Marpa::R2;
 use My_Actions;
 #use My_Grammar;
 use Encode;
-
+use Data::Printer;
 
 
 # Marpa Server Plugin : using the Marpa Grammar to parse MathML for notations
@@ -54,7 +54,7 @@ foreach (@$ref) {
 
 #Initialize grammar#
 #my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
-my $grammar = Marpa::R2::Scanless::G->new( { source => \$dsl } );
+my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
 
@@ -131,12 +131,19 @@ READ: while (1) {
   last READ if $@;
 } ## end READ: while (1)
 
-my $value_ref = $recce->value();
-if ( not defined $value_ref ) {
-  die "No parse\n";
-}
-my $actual_value = ${$value_ref};
-print "Actual value:",Dumper(\$actual_value),"\n";
-print "Actual events: ",Dumper($actual_events);
 
+# print "Actual events: ",Dumper($actual_events);
+my $counter = 1;
+my $value_ref = \'is defined';
+while (defined $value_ref) {
+  $value_ref = $recce->value();
+  if (defined $value_ref) {
+    my $actual_value = ${$value_ref};
+    # print "Actual value $counter:", Dumper(\$actual_value),"\n";
 
+    p @$actual_value;
+
+    $counter++;
+  }
+} 
+print "No more parses\n";
