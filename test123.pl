@@ -117,9 +117,9 @@ sub getNotations {
 sub extractArgs {
 	my ($rule) = @_;
 	my $result = {};
-	push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /argRuleN.*/);
+	push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /^argRuleN.*/);
 	for (my $i = 3; $i < scalar(@$rule); $i++) {
-	    if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /.*N\d+$/) {
+	    if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /N\d+$/) {
 			    my %temp = %{extractArgs($rule->[$i])};
 			  	while (my ($k, $v) = each(%temp)) {
 			  	push @{$result->{$k}}, @$v;

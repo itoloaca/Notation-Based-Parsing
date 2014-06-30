@@ -141,9 +141,54 @@ while (defined $value_ref) {
   if (defined $value_ref) {
     my $actual_value = ${$value_ref};
     # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-     p @$actual_value;
-    $counter++;
+     # p @$actual_value;
+     p getNotations($actual_value);
+     $counter++;
   }
 } 
 
+
+
+sub getNotations {
+  my ($rule) = @_;
+  my $name = $rule->[0];
+  my $result = {};
+  if ($name =~ /.*N\d+$/) {
+    my $attrib = extractArgs($rule);
+    $attrib->{"position"} = [$rule->[1],$rule->[2]]; 
+
+    push @{$result->{$name}}, $attrib; 
+  }
+  for (my $i = 3; $i < scalar(@$rule); $i++) {
+    if (ref $rule->[$i] eq 'ARRAY') {
+      my %temp = %{getNotations($rule->[$i])};
+      while (my ($k, $v) = each(%temp)) {
+          push @{$result->{$k}}, @$v;
+      }
+    }
+
+  } 
+  return $result;
+}
+
+sub extractArgs {
+  my ($rule) = @_;
+  my $result = {};
+  push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /^argRuleN.*/);
+  for (my $i = 3; $i < scalar(@$rule); $i++) {
+      if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /N\d+$/) {
+          my %temp = %{extractArgs($rule->[$i])};
+          while (my ($k, $v) = each(%temp)) {
+          push @{$result->{$k}}, @$v;
+        
+        }
+      }
+  } 
+  return $result;
+}
+
+
+# my $r =  getNotations($mn);
+
+# print Dumper(\$r);
 
