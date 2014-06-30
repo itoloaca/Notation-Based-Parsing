@@ -142,7 +142,7 @@ while (defined $value_ref) {
     my $actual_value = ${$value_ref};
     # print "Actual value $counter:", Dumper(\$actual_value),"\n";
      # p @$actual_value;
-     p getNotations($actual_value);
+     print Dumper(\getNotations($actual_value));
      $counter++;
   }
 } 
@@ -180,7 +180,6 @@ sub extractArgs {
           my %temp = %{extractArgs($rule->[$i])};
           while (my ($k, $v) = each(%temp)) {
           push @{$result->{$k}}, @$v;
-        
         }
       }
   } 
