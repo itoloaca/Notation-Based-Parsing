@@ -134,16 +134,16 @@ READ: while (1) {
 
 # print "Actual events: ",Dumper($actual_events);
 my $counter = 1;
+my $valueList = ();
 my $value_ref = \'is defined';
 while (defined $value_ref) {
   $value_ref = $recce->value();
   if (defined $value_ref) {
     my $actual_value = ${$value_ref};
     # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-
-    p @$actual_value;
-
+     p @$actual_value;
     $counter++;
   }
 } 
-print "No more parses\n";
+
+
