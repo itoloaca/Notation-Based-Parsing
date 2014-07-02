@@ -60,10 +60,10 @@ my $recce = Marpa::R2::Scanless::R->new(
 
 ###########################################################################################
 #Get input from file# Input method 1 ####################################################
-my $input_file = "input.omdoc";
-open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
-my $input1 = join('', <$input_fh>);
-$input1 = decode("UTF-8",$input1);
+# my $input_file = "input.omdoc";
+# open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
+# my $input1 = join('', <$input_fh>);
+# $input1 = decode("UTF-8",$input1);
 
 #Harvest input from XML file# Input method 2 ###############################################
 # use XML::LibXML;
@@ -73,24 +73,25 @@ $input1 = decode("UTF-8",$input1);
 # my @math_elements = $nc->findnodes("//m:math"); 
 # # print scalar(@math_elements),"\n";
 
-# my $index1 = 12;
+# my $index1 = 2;
 # my $input2 = $math_elements[$index1];
-
+# print "$input2 \n";
 
 
 #Harvest input from HTML file# Input method 3 ##################################################
-# use Mojo::DOM;
-# open FILEHANDLE, 'html_math_test.html' or die $!;
-# my $content1 = do { local $/; <FILEHANDLE> };
-# my $dom1 = Mojo::DOM->new($content1);
-# $dom1->xml(0); #enforce html 
-# my @math = $dom1->find('math')->each;
-# foreach (@math) {
-#   $_ = $_ -> to_string;
-#   $_ = decode("UTF-8", $_);
-# }
-# my $index2 = 1;
-# my $input3 = $math[$index2];
+use Mojo::DOM;
+open FILEHANDLE, 'html_math_test.html' or die $!;
+my $content1 = do { local $/; <FILEHANDLE> };
+my $dom1 = Mojo::DOM->new($content1);
+$dom1->xml(0); #enforce html 
+my @math = $dom1->find('math')->each;
+foreach (@math) {
+  $_ = $_ -> to_string;
+  $_ = decode("UTF-8", $_);
+}
+my $index2 = 2;
+my $input3 = $math[$index2];
+print "$input3 \n";
 
 #print scalar(@math) . "\n";
 #print Dumper($math[$index2]) . "\n\n";
@@ -102,12 +103,12 @@ $input1 = decode("UTF-8",$input1);
 
 ###################################################################################################
 #Choose input 1-file, 2-xml, 3-html
-my $input = $input1;
+my $input = $input3;
 
 #Feed the input to the grammar#
 my $length = length $input;
 my $start = 0; #default - zero 
-my $pos = $recce->read( \"$input", $start, $length - $start );
+my $pos = $recce->read( \"$input", $start, $length);
 my $actual_events = [];
 
 #Record positions where notations matched#
@@ -124,29 +125,66 @@ READ: while (1) {
   for (@current_events) {
       my ($start_rule, $length_rule) = $recce->last_completed($_);
       my $last_expression = $recce->substring($start_rule, $length_rule);
-      push @$actual_events, [$pos - length($last_expression) +1,$pos+1, $_];
+      push @$actual_events, [$pos - length($last_expression),length($last_expression), $_] if ($_ !~ /^argRuleN.*/);
   }
   last READ if $pos >= $length;
   eval {$pos = $recce->resume(); };
   last READ if $@;
 } ## end READ: while (1)
 
+print "Actual events: ",Dumper($actual_events);
 
-# print "Actual events: ",Dumper($actual_events);
-my $counter = 1;
-my $valueList = ();
-my $value_ref = \'is defined';
-while (defined $value_ref) {
-  $value_ref = $recce->value();
-  if (defined $value_ref) {
-    my $actual_value = ${$value_ref};
-    # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-     # p @$actual_value;
-     print Dumper(\getNotations($actual_value));
-     $counter++;
-  }
-} 
+for (my $i = 0; $i < scalar(@$actual_events); $i++) {
+  print "ITERATION #################### $i ###################\n";
+    my ($start, $length, $name)= @{$$actual_events[$i]};
+    my $end = $start + $length;
+    my $recce = Marpa::R2::Scanless::R->new({ grammar => $grammar, semantics_package => 'My_Actions' } )  ;
+    my $pos = $recce->read(\"$input", $start, $length);
+    while ($pos< $end) {
+       eval {$pos = $recce->resume(); };
+      }
+##########################################
+      my $counter = 0;
+      my $valueList = ();
+      my $value_ref = \'is defined';
+      PROCESS: while (defined $value_ref) {
+        $value_ref = $recce->value();
+        if (defined $value_ref) {
+          my $actual_value = ${$value_ref};
+           # print "Actual value $counter:", Dumper(\$actual_value),"\n";
+           # p @$actual_value;
+         my $notations = getNotations($actual_value);
+         print Dumper(\$notations) if (%$notations);
+          $counter++;
+        #  last PROCESS if $counter > 2000;
+        }
+      } 
+  #############################################    
+}
 
+# my $counter = 0;
+# my $valueList = ();
+# my $value_ref = \'is defined';
+# PROCESS: while (defined $value_ref) {
+#   $value_ref = $recce->value();
+#   if (defined $value_ref) {
+#     my $actual_value = ${$value_ref};
+#     # print "Actual value $counter:", Dumper(\$actual_value),"\n";
+#     # p @$actual_value;
+#     my $notations = getNotations($actual_value);
+#     print Dumper(\$notations);
+#     $counter++;
+#     last PROCESS if $counter > 2000;
+#   }
+# } 
+
+# print $counter . "\n";
+
+# x=2            4 matches  0.8s
+# x=2=3         13 matches  0.9s
+# x=2=3=4       55 matches  1.3s
+# x=2=3=4=5    259 matches  2.7s
+# x=2=3=4=5=6 1279 matches 11.2s
 
 
 sub getNotations {
@@ -186,8 +224,4 @@ sub extractArgs {
   return $result;
 }
 
-
-# my $r =  getNotations($mn);
-
-# print Dumper(\$r);
 
