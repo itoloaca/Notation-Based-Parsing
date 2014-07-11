@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 use utf8;
 use 5.014;
-use strict;
+# use strict;
 use warnings;
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -13,7 +13,8 @@ use My_Actions;
 #use My_Grammar;
 use Encode;
 use Data::Printer;
-
+use Data::Compare;
+binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning 
 
 # Marpa Server Plugin : using the Marpa Grammar to parse MathML for notations
 #----------------------------------------------------------------------------
@@ -24,7 +25,9 @@ use Data::Printer;
 # notations. Then the Grammar is passed to Marpa and the positions where the 
 # notations matched are recorded.
 #----------------------------------------------------------------------------
-
+#   To get the positions of the notations events are used.
+#   To get the positions of the arguments the grammar is called again 
+# on the fragments where the notations matched.
 
 #POST REQUEST##############################################
 
@@ -55,6 +58,7 @@ foreach (@$ref) {
 #Initialize grammar#
 #my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
 my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
+
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
 
@@ -87,14 +91,14 @@ $dom1->xml(0); #enforce html
 my @math = $dom1->find('math')->each;
 foreach (@math) {
   $_ = $_ -> to_string;
-  $_ = decode("UTF-8", $_);
+  $_ = decode("UTF-8", encode("UTF-8", $_));
 }
-my $index2 = 2;
+my $index2 = 8;
 my $input3 = $math[$index2];
-print "$input3 \n";
+# print "$input3 \n";
 
-#print scalar(@math) . "\n";
-#print Dumper($math[$index2]) . "\n\n";
+# print scalar(@math) . "\n";
+# print Dumper($math[$index2]) . "\n\n";
 # foreach (@math){
 #   print Dumper(\$_);
 #   print $_ . "\n\n";
@@ -104,7 +108,11 @@ print "$input3 \n";
 ###################################################################################################
 #Choose input 1-file, 2-xml, 3-html
 my $input = $input3;
-
+my $temp = $input;
+print "$input \n";
+#Take away whitespaces around tags
+$input =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
+print "Trimmed input: \n$input \n" if ($temp ne $input);
 #Feed the input to the grammar#
 my $length = length $input;
 my $start = 0; #default - zero 
@@ -113,7 +121,6 @@ my $actual_events = [];
 
 #Record positions where notations matched#
 READ: while (1) {
- 
   my @current_events = ();
   
   EVENT:
@@ -134,8 +141,10 @@ READ: while (1) {
 
 print "Actual events: ",Dumper($actual_events);
 
+#GET ARGUMENT POSITIONS###################################################################################
+my $result = {};
 for (my $i = 0; $i < scalar(@$actual_events); $i++) {
-  print "ITERATION #################### $i ###################\n";
+  # print " ####################".$$actual_events[$i]->[2]." ###################\n";
     my ($start, $length, $name)= @{$$actual_events[$i]};
     my $end = $start + $length;
     my $recce = Marpa::R2::Scanless::R->new({ grammar => $grammar, semantics_package => 'My_Actions' } )  ;
@@ -143,25 +152,43 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
     while ($pos< $end) {
        eval {$pos = $recce->resume(); };
       }
-##########################################
       my $counter = 0;
       my $valueList = ();
       my $value_ref = \'is defined';
       PROCESS: while (defined $value_ref) {
+        $counter++;
+        last PROCESS if $counter>350;
         $value_ref = $recce->value();
         if (defined $value_ref) {
           my $actual_value = ${$value_ref};
+  
            # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-           # p @$actual_value;
+            # p @$actual_value;
+            # print $$actual_events[$i]->[2]; 
+         # p $actual_value if $i==2;
+       
          my $notations = getNotations($actual_value);
-         print Dumper(\$notations) if (%$notations);
-          $counter++;
-        #  last PROCESS if $counter > 2000;
+         if (%$notations) {
+            foreach (@{$notations->{$name}}) {
+              my $el = $_;
+              # my $s = $notations->{$name}->[0]->{'position'}->[0];
+              # my $l = $notations->{$name}->[0]->{'position'}->[1];
+              my $s = $el->{'position'}->[0];
+              my $l = $el->{'position'}->[1];
+              my $flag = 0;
+              if ($s ==   $start && $l ==  $length) {
+                  foreach (@{$result->{$name}}) {
+                    $flag = 1 if (Compare($_,$el)==1);
+                  }
+                  push @{$result->{$name}}, $_ if ($flag == 0);
+              }
+            }
+          }  
         }
       } 
-  #############################################    
 }
-
+############################################# 
+print Dumper(\$result);
 # my $counter = 0;
 # my $valueList = ();
 # my $value_ref = \'is defined';
@@ -223,5 +250,3 @@ sub extractArgs {
   } 
   return $result;
 }
-
-
