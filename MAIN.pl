@@ -231,7 +231,6 @@ sub getNotations {
           push @{$result->{$k}}, @$v;
       }
     }
-
   } 
   return $result;
 }
