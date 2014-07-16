@@ -119,7 +119,7 @@ my $start = 0; #default - zero
 my $pos = $recce->read( \"$input", $start, $length);
 my $actual_events = [];
 
-#Record positions where notations matched#
+#Record positions where notations matched#######################################122
 READ: while (1) {
   my @current_events = ();
   
@@ -141,7 +141,7 @@ READ: while (1) {
 
 print "Actual events: ",Dumper($actual_events);
 
-#GET ARGUMENT POSITIONS###################################################################################
+# #GET ARGUMENT POSITIONS###################################################################################
 my $result = {};
 for (my $i = 0; $i < scalar(@$actual_events); $i++) {
   # print " ####################".$$actual_events[$i]->[2]." ###################\n";
@@ -157,7 +157,8 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
       my $value_ref = \'is defined';
       PROCESS: while (defined $value_ref) {
         $counter++;
-        last PROCESS if $counter>350;
+        last PROCESS if $counter>50;
+        # print "$counter\n";
         $value_ref = $recce->value();
         if (defined $value_ref) {
           my $actual_value = ${$value_ref};
@@ -165,7 +166,7 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
            # print "Actual value $counter:", Dumper(\$actual_value),"\n";
             # p @$actual_value;
             # print $$actual_events[$i]->[2]; 
-         # p $actual_value if $i==2;
+         # p $actual_value if $i==0;
        
          my $notations = getNotations($actual_value);
          if (%$notations) {
@@ -187,31 +188,42 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
         }
       } 
 }
-############################################# 
 print Dumper(\$result);
+########################################################################192
 # my $counter = 0;
 # my $valueList = ();
 # my $value_ref = \'is defined';
+# my $result = {};
 # PROCESS: while (defined $value_ref) {
 #   $value_ref = $recce->value();
 #   if (defined $value_ref) {
-#     my $actual_value = ${$value_ref};
-#     # print "Actual value $counter:", Dumper(\$actual_value),"\n";
+#     my $actual_value = ${$value_ref}; 
 #     # p @$actual_value;
 #     my $notations = getNotations($actual_value);
-#     print Dumper(\$notations);
+#     if (%$notations) {
+#             foreach (@{$notations->{$name}}) {
+#               my $el = $_;
+#               # my $s = $notations->{$name}->[0]->{'position'}->[0];
+#               # my $l = $notations->{$name}->[0]->{'position'}->[1];
+#               my $s = $el->{'position'}->[0];
+#               my $l = $el->{'position'}->[1];
+#               my $flag = 0;
+#               if ($s ==   $start && $l ==  $length) {
+#                   foreach (@{$result->{$name}}) {
+#                     $flag = 1 if (Compare($_,$el)==1);
+#                   }
+#                   push @{$result->{$name}}, $_ if ($flag == 0);
+#               }
+#             }
+#           }  
 #     $counter++;
-#     last PROCESS if $counter > 2000;
+#     # last PROCESS if $counter>2000;
 #   }
 # } 
 
-# print $counter . "\n";
+# # print $counter . "\n";
 
-# x=2            4 matches  0.8s
-# x=2=3         13 matches  0.9s
-# x=2=3=4       55 matches  1.3s
-# x=2=3=4=5    259 matches  2.7s
-# x=2=3=4=5=6 1279 matches 11.2s
+
 
 
 sub getNotations {
