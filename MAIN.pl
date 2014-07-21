@@ -10,7 +10,7 @@ use Data::Dumper;
 use English qw( -no_match_vars );
 use Marpa::R2;
 use My_Actions;
-#use My_Grammar;
+use My_Grammar;
 use Encode;
 use Data::Printer;
 use Data::Compare;
@@ -56,8 +56,8 @@ foreach (@$ref) {
 
 
 #Initialize grammar#
-#my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
-my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
+my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+# my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
 
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
