@@ -14,6 +14,9 @@ use My_Grammar;
 use Encode;
 use Data::Printer;
 use Data::Compare;
+use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
+                      clock_gettime clock_getres clock_nanosleep clock
+                      stat lstat );
 binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning 
 
 # Marpa Server Plugin : using the Marpa Grammar to parse MathML for notations
@@ -56,8 +59,8 @@ foreach (@$ref) {
 
 
 #Initialize grammar#
-my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
-# my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
+# my $grammar = Marpa::R2::Scanless::G->new( { source => \$My_Grammar::dsl } );
+my $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
 
 my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
@@ -144,17 +147,22 @@ print "Actual events: ",Dumper($actual_events);
 # #GET ARGUMENT POSITIONS###################################################################################
 my $result = {};
 for (my $i = 0; $i < scalar(@$actual_events); $i++) {
+ 
   # print " ####################".$$actual_events[$i]->[2]." ###################\n";
     my ($start, $length, $name)= @{$$actual_events[$i]};
     my $end = $start + $length;
+     
     my $recce = Marpa::R2::Scanless::R->new({ grammar => $grammar, semantics_package => 'My_Actions' } )  ;
     my $pos = $recce->read(\"$input", $start, $length);
+    
     while ($pos< $end) {
        eval {$pos = $recce->resume(); };
       }
+   
       my $counter = 0;
       my $valueList = ();
       my $value_ref = \'is defined';
+       my $t0 = [gettimeofday];#
       PROCESS: while (defined $value_ref) {
         $counter++;
         last PROCESS if $counter>50;
@@ -167,9 +175,10 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
             # p @$actual_value;
             # print $$actual_events[$i]->[2]; 
          # p $actual_value if $i==0;
-       
-         my $notations = getNotations($actual_value);
-         if (%$notations) {
+         
+          my $notations = getNotations($actual_value);
+
+          if (%$notations) {
             foreach (@{$notations->{$name}}) {
               my $el = $_;
               # my $s = $notations->{$name}->[0]->{'position'}->[0];
@@ -179,15 +188,18 @@ for (my $i = 0; $i < scalar(@$actual_events); $i++) {
               my $flag = 0;
               if ($s ==   $start && $l ==  $length) {
                   foreach (@{$result->{$name}}) {
-                    $flag = 1 if (Compare($_,$el)==1);
-                  }
+                    $flag = 1 if (Compare($_,$el)==1); }
                   push @{$result->{$name}}, $_ if ($flag == 0);
               }
             }
+          
           }  
         }
       } 
+       
 }
+
+
 print Dumper(\$result);
 ########################################################################192
 # my $counter = 0;
@@ -261,3 +273,7 @@ sub extractArgs {
   } 
   return $result;
 }
+
+# my $t0 = [gettimeofday];#
+# my $elapsed = tv_interval ( $t0 );#
+# print("It took ", $elapsed," seconds\n");#
