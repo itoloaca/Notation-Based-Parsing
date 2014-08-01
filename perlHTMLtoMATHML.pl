@@ -28,7 +28,7 @@ foreach (@math) {
 # 	print Dumper(\$_);
 # 	print $_ . "\n\n";
 # }
-my $index2 = 71 ;
+my $index2 = 29;
 my $input3 = $math[$index2];
 $input3 =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
 print "$input3 \n";

@@ -96,7 +96,7 @@ foreach (@math) {
   $_ = $_ -> to_string;
   $_ = decode("UTF-8", encode("UTF-8", $_));
 }
-my $index2 = 8;
+my $index2 = 33;
 my $input3 = $math[$index2];
 # print "$input3 \n";
 
@@ -242,7 +242,7 @@ sub getNotations {
   my ($rule) = @_;
   my $name = $rule->[0];
   my $result = {};
-  if ($name =~ /.*N\d+$/) {
+  if ($name =~ /N\d+$/) {
     my $attrib = extractArgs($rule);
     $attrib->{"position"} = [$rule->[1],$rule->[2]]; 
 
