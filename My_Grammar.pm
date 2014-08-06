@@ -1,13 +1,19 @@
 package My_Grammar;
-
+# <mrow><mi>L</mi><mi>L</mi></mrow>
 our $dsl = <<END_OF_DSL;
-#Manually generated part
-:default ::= action => [name, start, length, values]
 lexeme default = latm => 1
+
+#The important part of the grammar 
+
 :start ::= Expr 
-ExprList ::= Expr+
-Expr ::= Notation 
- | Presentation 
+ExprList ::= Expr | Expr ExprList
+Expr ::= Notation | Presentation 
+argRule ::= Expr
+Notation ::=  L argRule 
+L::= miB 'L' miE # This means "<mi>L</mi>" 
+event 'Notation' = completed Notation
+
+#This part is for parsing MathML tags and isn't closely related to the question
 Presentation ::= mrowB ExprList mrowE 
  | moB '(' moE ExprList moB ')' moE 
  | moB text moE 
@@ -102,31 +108,5 @@ notQuote ~ [^"<>]
 textRule::= char | char textRule 
  text ::= #empty
  char ~ [^<>]
- argRule ::= Expr # Presentation |Content 
-#Automatically generated part
-Notation ::= _set_ninsetN134
-
-_set_ninsetN134::= argRuleN134A1Arg rule315 argRuleN134A2Arg 
-argRuleN134A1Arg::= argRule
-rule315::= moB 'my_symbol' moE
-argRuleN134A2Arg::= argRule
-
-event '_set_ninsetN134' = completed _set_ninsetN134
-
 END_OF_DSL
 1;
-
-#INPUT: <math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>K1</mi><mo>my_symbol</mo><mi>L</mi></mrow></math> 
-#OUTPUT:
-
-# <math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>K1</mi><mo>my_symbol</mo><mi>L</mi></mrow></math>  
-# Trimmed input: 
-# <math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>K1</mi><mo>my_symbol</mo><mi>L</mi></mrow></math> 
-# Actual events: $VAR1 = [
-#           [
-#             84,
-#             10,
-#             '_set_ninsetN134'
-#           ]
-#         ];
-# [Finished in 0.5s]
