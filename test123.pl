@@ -34,24 +34,24 @@ binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning
 
 #POST REQUEST##############################################
 
-require LWP::UserAgent;
+# require LWP::UserAgent;
 
 
-my $content = '{"a" : "b"}' ;
-my $ua = LWP::UserAgent->new;
-my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
-$req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
-$req->content(Encode::encode_utf8($content));
-$req->content_type("text/plain; charset='utf8'");
+# my $content = '{"a" : "b"}' ;
+# my $ua = LWP::UserAgent->new;
+# my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
+# $req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
+# $req->content(Encode::encode_utf8($content));
+# $req->content_type("text/plain; charset='utf8'");
 
 
 
-my $res = $ua->request($req);
-my $ref = decode_json($res->decoded_content);
-my $dsl = "";
-foreach (@$ref) {
-  $dsl = $dsl . $_ .  "\n";
-}
+# my $res = $ua->request($req);
+# my $ref = decode_json($res->decoded_content);
+# my $dsl = "";
+# foreach (@$ref) {
+#   $dsl = $dsl . $_ .  "\n";
+# }
 
 
 ############################################################
@@ -238,41 +238,41 @@ print "Actual events: ",Dumper($actual_events);
 
 
 
-sub getNotations {
-  my ($rule) = @_;
-  my $name = $rule->[0];
-  my $result = {};
-  if ($name =~ /N\d+$/) {
-    my $attrib = extractArgs($rule);
-    $attrib->{"position"} = [$rule->[1],$rule->[2]]; 
+# sub getNotations {
+#   my ($rule) = @_;
+#   my $name = $rule->[0];
+#   my $result = {};
+#   if ($name =~ /N\d+$/) {
+#     my $attrib = extractArgs($rule);
+#     $attrib->{"position"} = [$rule->[1],$rule->[2]]; 
 
-    push @{$result->{$name}}, $attrib; 
-  }
-  for (my $i = 3; $i < scalar(@$rule); $i++) {
-    if (ref $rule->[$i] eq 'ARRAY') {
-      my %temp = %{getNotations($rule->[$i])};
-      while (my ($k, $v) = each(%temp)) {
-          push @{$result->{$k}}, @$v;
-      }
-    }
-  } 
-  return $result;
-}
+#     push @{$result->{$name}}, $attrib; 
+#   }
+#   for (my $i = 3; $i < scalar(@$rule); $i++) {
+#     if (ref $rule->[$i] eq 'ARRAY') {
+#       my %temp = %{getNotations($rule->[$i])};
+#       while (my ($k, $v) = each(%temp)) {
+#           push @{$result->{$k}}, @$v;
+#       }
+#     }
+#   } 
+#   return $result;
+# }
 
-sub extractArgs {
-  my ($rule) = @_;
-  my $result = {};
-  push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /^argRuleN.*/);
-  for (my $i = 3; $i < scalar(@$rule); $i++) {
-      if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /N\d+$/) {
-          my %temp = %{extractArgs($rule->[$i])};
-          while (my ($k, $v) = each(%temp)) {
-          push @{$result->{$k}}, @$v;
-        }
-      }
-  } 
-  return $result;
-}
+# sub extractArgs {
+#   my ($rule) = @_;
+#   my $result = {};
+#   push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /^argRuleN.*/);
+#   for (my $i = 3; $i < scalar(@$rule); $i++) {
+#       if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /N\d+$/) {
+#           my %temp = %{extractArgs($rule->[$i])};
+#           while (my ($k, $v) = each(%temp)) {
+#           push @{$result->{$k}}, @$v;
+#         }
+#       }
+#   } 
+#   return $result;
+# }
 
 # my $t0 = [gettimeofday];#
 # my $elapsed = tv_interval ( $t0 );#
