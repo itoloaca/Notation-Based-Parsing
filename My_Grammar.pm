@@ -2,7 +2,7 @@ package My_Grammar;
 # <mrow><mi>L</mi><mi>L</mi></mrow>
 our $dsl = <<END_OF_DSL;
 lexeme default = latm => 1
-
+:default ::= action => [name,start,length,values]
 #The important part of the grammar 
 
 :start ::= Expr 

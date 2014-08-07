@@ -143,7 +143,10 @@ READ: while (1) {
 } ## end READ: while (1)
 
 print "Actual events: ",Dumper($actual_events);
-
+while (my $value = $recce->value()) {
+  print "Value: \n";
+  p $value;
+}
 # # #GET ARGUMENT POSITIONS###################################################################################
 # my $result = {};
 # for (my $i = 0; $i < scalar(@$actual_events); $i++) {
