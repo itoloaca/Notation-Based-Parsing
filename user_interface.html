@@ -1,0 +1,108 @@
+<html>
+<head>
+	<script></script>
+	<!-- <link rel="stylesheet" type="text/css" href="mystyle.css"> -->
+	<style>
+		body {
+			font-family: arial, helvetica, sans-serif;
+			font-size: 15px;
+		}
+		#wrapper {
+			width: 500px;
+			height: 610px;
+			margin: 0px auto;
+			padding: 10px;
+		}
+		#textArea {
+			border: 1px solid;
+			height: 300px;
+			width: 500px;
+			margin-bottom: 10px;
+		}
+		#inputArea{
+			width: 500px;
+			height: 190px;
+			
+		}
+		#input-box-left {
+			width: 350px;
+			height: 200px;
+		}
+		#input-box {
+			border: 1px solid;
+			width: 350px;
+			height: 20px;	
+			margin-bottom: 5px;
+		}
+		#choice-list {
+			width: 350px;
+			height: 175px;
+			font-size: 15px;	
+		}
+		#input-buttons-right {
+			
+			position: absolute;
+			left: 360px;
+			top: 320px;
+			width: 145px;
+			height: 190px;
+			font-size: 15px;
+			
+		}
+		#select {
+			width: 145px;
+			height: 50px;
+			
+		}
+		#ignore {
+			width: 145px;
+			height: 50px;	
+			
+		}
+		#select-all {
+			width: 145px;
+			height: 50px;
+			
+		}
+		#ignore-all {
+			width: 145px;
+			height: 50px;
+			
+		}
+	  .bold {
+	  	   font-weight: bold;
+	  	   text-decoration: underline;
+	  }
+	</style>
+</head>
+<body>
+<div id="textArea">
+		Sample latex text <br>
+		<span class="bold">Sample latex expression that can be semantified</span>
+</div>
+<div id="inputArea">
+	<div id="input-box-left">
+		<input id="input-box" type="text" name="new_expr" size="15" onkeypress="trace_key()" 
+				 value="This is what is going to be replaced into the text">
+
+		<select id="choice-list" name="choice_list" size="5" onchange="choice_list_change()">
+			<option>Sample semantified version</option>
+			<option>test2</option>
+			<option>test3</option>
+			<option>test4</option>
+			<option>test5</option>
+			<option>test6</option>
+			<option>test7</option>
+			<option>test8</option>
+		</select>
+	</div>
+	<div id="input-buttons-right">
+		<button id="select" onclick="process('select')" >Select</button>
+		<button id="ignore" onclick="process('ignore')" >Ignore</button>
+		<button id="select-all" onclick="process('select-all')" >Select all</button>
+		<button id="ignore-all" onclick="process('ignore-all')" >Ignore all</button>
+	</div>
+</div>
+</p>
+</body>
+</html>
