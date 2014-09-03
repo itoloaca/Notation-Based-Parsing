@@ -1,6 +1,11 @@
 <html>
 <head>
-	<script></script>
+	<script src="jquery.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+		  $("#choice-list1").empty();
+		});
+	</script>
 	<!-- <link rel="stylesheet" type="text/css" href="mystyle.css"> -->
 	<style>
 		body {
@@ -76,8 +81,9 @@
 	</style>
 </head>
 <body>
+
 <div id="textArea">
-		Sample latex text <br>
+		<span> Sample latex text <br> </span>
 		<span class="bold">Sample latex expression that can be semantified</span>
 </div>
 <div id="inputArea">
@@ -103,6 +109,6 @@
 		<button id="ignore-all" onclick="process('ignore-all')" >Ignore all</button>
 	</div>
 </div>
-</p>
+
 </body>
 </html>
