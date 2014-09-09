@@ -39,7 +39,6 @@ post '/initialize_grammar' => sub {
   #     create_rule($value);
   #   }
   # }
-  print("HERE\n");
   my $content = '{"a" : "b"}' ;
   my $ua = LWP::UserAgent->new;
   my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
@@ -55,8 +54,8 @@ post '/initialize_grammar' => sub {
   $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
   $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
-
-  $self->render(etxt=>'success');
+  # p $dsl;
+  $self->render(text=>'success');
 };
 
 post '/detect_notations' => sub {
@@ -169,7 +168,7 @@ post '/detect_notations' => sub {
 
   print Dumper(\$result);
 
-  $self->render(etxt=>'success');
+  $self->render(text=>'success');
 };
 
 sub getNotations {
