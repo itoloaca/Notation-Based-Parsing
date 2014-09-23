@@ -149,8 +149,8 @@ post '/detect_notations' => sub {
                 my $el = $_;
                 # my $s = $notations->{$name}->[0]->{'position'}->[0];
                 # my $l = $notations->{$name}->[0]->{'position'}->[1];
-                my $s = $el->{'position'}->[0];
-                my $l = $el->{'position'}->[1];
+                my $s = $el->{'position'}->[0]->[0];
+                my $l = $el->{'position'}->[0]->[1];
                 my $flag = 0;
                 if ($s ==   $start && $l ==  $length) {
                     foreach (@{$result->{$name}}) {
@@ -161,14 +161,14 @@ post '/detect_notations' => sub {
             
             }  
           }
-        } 
-         
+        }       
   }
 
 
   print Dumper(\$result);
-
-  $self->render(text=>'success');
+  my $json = encode_json $result;
+  # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
+  $self->render(text=> $json);
 };
 
 sub getNotations {
@@ -177,7 +177,7 @@ sub getNotations {
   my $result = {};
   if ($name =~ /N\d+$/) {
     my $attrib = extractArgs($rule);
-    $attrib->{"position"} = [$rule->[1],$rule->[2]]; 
+    $attrib->{"position"} = [[$rule->[1],$rule->[2]]]; 
 
     push @{$result->{$name}}, $attrib; 
   }
