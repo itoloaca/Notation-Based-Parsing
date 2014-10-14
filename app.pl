@@ -28,7 +28,6 @@ require LWP::UserAgent;
 
 my $dsl;
 my $grammar;
-my $recce;
 
 post '/initialize_grammar' => sub {
   my $self = shift;
@@ -52,13 +51,13 @@ post '/initialize_grammar' => sub {
     $dsl = $dsl . $_ .  "\n";
   }
   $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
-  $recce = Marpa::R2::Scanless::R->new(
-    { grammar => $grammar, semantics_package => 'My_Actions' } );
   # p $dsl;
   $self->render(text=>'success');
 };
 
 post '/detect_notations' => sub {
+  my $recce = Marpa::R2::Scanless::R->new(
+    { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
   my $post_params = $self->req->body_params->params || [];
   #Input from XML
@@ -166,7 +165,31 @@ post '/detect_notations' => sub {
 
 
   print Dumper(\$result);
-  my $json = encode_json $result;
+  my $final = {"status" => "OK",
+               "payload" => $result,
+               "message" => "No obvious problems"};
+  # my $final = {"status" => "OK",
+  #              "payload" =>  
+  #              {
+  #                          '_pair_twodimN600' => [
+  #                                                {
+  #                                                  'position' => [
+  #                                                                  [
+  #                                                                    49,
+  #                                                                    33
+  #                                                                  ]
+  #                                                                ],
+  #                                                  'argRuleN600A1Arg' => [
+  #                                                                        [
+  #                                                                          55,
+  #                                                                          10
+  #                                                                        ]
+  #                                                                      ]
+  #                                                }
+  #                                              ]
+  #             },
+  #              "message" => "No obvious problems"};
+  my $json = encode_json $final;
   # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
   $self->render(text=> $json);
 };
