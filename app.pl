@@ -28,54 +28,62 @@ require LWP::UserAgent;
 
 my $dsl;
 my $grammar;
-
+my $flag = 1;
 post '/initialize_grammar' => sub {
   my $self = shift;
-
-  my $post_params = $self->req->body_params->params || [];
-  # while (my ($key,$value) = splice(@$post_params,0,2)) {
-  #   if ($key eq 'rule') {
-  #     create_rule($value);
-  #   }
-  # }
-  my $content = '{"a" : "b"}' ;
-  my $ua = LWP::UserAgent->new;
-  my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
-  $req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
-  $req->content(Encode::encode_utf8($content));
-  $req->content_type("text/plain; charset='utf8'");
-  my $res = $ua->request($req);
-  my $ref = decode_json($res->decoded_content);
-  $dsl = "";
-  foreach (@$ref) {
-    $dsl = $dsl . $_ .  "\n";
+  if ($flag) {
+    $flag = 0;
+    my $post_params = $self->req->body_params->params || [];
+    # while (my ($key,$value) = splice(@$post_params,0,2)) {
+    #   if ($key eq 'rule') {
+    #     create_rule($value);
+    #   }
+    # }
+    my $content = '{"a" : "b"}' ;
+    my $ua = LWP::UserAgent->new;
+    my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
+    $req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
+    $req->content(Encode::encode_utf8($content));
+    $req->content_type("text/plain; charset='utf8'");
+    my $res = $ua->request($req);
+    my $ref = decode_json($res->decoded_content);
+    $dsl = "";
+    foreach (@$ref) {
+      $dsl = $dsl . $_ .  "\n";
+    }
+    $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
+    # p $dsl;
   }
-  $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
-  # p $dsl;
   $self->render(text=>'success');
 };
 
 post '/detect_notations' => sub {
+
   my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
-  my $post_params = $self->req->body_params->params || [];
-  #Input from XML
-  use Mojo::DOM;
-  open FILEHANDLE, 'html_math_test.html' or die $!;
-  my $content1 = do { local $/; <FILEHANDLE> };
-  my $dom1 = Mojo::DOM->new($content1);
-  $dom1->xml(0); #enforce html 
-  my @math = $dom1->find('math')->each;
-  foreach (@math) {
-    $_ = $_ -> to_string;
-    $_ = decode("UTF-8", encode("UTF-8", $_));
-  }
-  my $index2 = 73;
-  my $input3 = $math[$index2];
-  ###################################################################################################
-  #Choose input 1-file, 2-xml, 3-html
-  my $input = $input3;
+  my @post_params = $self->req->body_params->params || [];
+  # print "POST PARAMS = \n";
+  # p $post_params;
+  # print "\nEND_POST_PARAMS\n";
+  my $post_data = $post_params[0][1];
+  # #Input from XML
+  # use Mojo::DOM;
+  # open FILEHANDLE, 'html_math_test.html' or die $!;
+  # my $content1 = do { local $/; <FILEHANDLE> };
+  # my $dom1 = Mojo::DOM->new($content1);
+  # $dom1->xml(0); #enforce html 
+  # my @math = $dom1->find('math')->each;
+  # foreach (@math) {
+  #   $_ = $_ -> to_string;
+  #   $_ = decode("UTF-8", encode("UTF-8", $_));
+  # }
+  # my $index2 = 73;
+  # my $input3 = $math[$index2];
+  # ###################################################################################################
+  # #Choose input 1-file, 2-xml, 3-html
+  # print "\nInput3\n$input3\nEND\n";
+  my $input = $post_data;
   my $temp = $input;
   print "$input \n";
   #Take away whitespaces around tags
