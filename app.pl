@@ -63,9 +63,9 @@ post '/detect_notations' => sub {
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
   my @post_params = $self->req->body_params->params || [];
-  # print "POST PARAMS = \n";
-  # p $post_params;
-  # print "\nEND_POST_PARAMS\n";
+  print "POST PARAMS = \n";
+  p @post_params;
+  print "\nEND_POST_PARAMS\n";
   my $post_data = $post_params[0][1];
   # #Input from XML
   # use Mojo::DOM;
@@ -84,15 +84,16 @@ post '/detect_notations' => sub {
   # #Choose input 1-file, 2-xml, 3-html
   # print "\nInput3\n$input3\nEND\n";
   my $input = $post_data;
+  # my $input = $input3; 
   my $temp = $input;
-  print "$input \n";
+  print "\$input =$ input \n";
   #Take away whitespaces around tags
   $input =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
   print "Trimmed input: \n$input \n" if ($temp ne $input);
   #Feed the input to the grammar#
   my $length = length $input;
-  my $start = 0; #default - zero 
-  my $pos = $recce->read( \"$input", $start, $length);
+  my $start = 0; #default - zero
+   my $pos = $recce->read( \"$input", $start, $length);
   my $actual_events = [];
 
   #Record positions where notations matched#######################################122
@@ -138,7 +139,7 @@ post '/detect_notations' => sub {
          my $t0 = [gettimeofday];#
         PROCESS: while (defined $value_ref) {
           $counter++;
-          last PROCESS if $counter>50;
+          last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
           # print "$counter\n";
           $value_ref = $recce->value();
           if (defined $value_ref) {
