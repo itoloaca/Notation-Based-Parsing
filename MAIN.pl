@@ -35,11 +35,11 @@ binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning
 #POST REQUEST##############################################
 
 require LWP::UserAgent;
-#new line
+
 
 my $content = '{"a" : "b"}' ;
 my $ua = LWP::UserAgent->new;
-my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
+my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';
 $req->header( 'Content-Type' => 'application/json', 'Content-Length' => length('{"a" : "b"}'));
 $req->content(Encode::encode_utf8($content));
 $req->content_type("text/plain; charset='utf8'");

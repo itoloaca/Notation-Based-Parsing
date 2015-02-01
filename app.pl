@@ -176,7 +176,7 @@ post '/detect_notations' => sub {
   print Dumper(\$result);
   my $final = {"status" => "OK",
                "payload" => $result,
-               "message" => "No obvious problems"};
+               "message" => $input};
   # my $final = {"status" => "OK",
   #              "payload" =>  
   #              {
