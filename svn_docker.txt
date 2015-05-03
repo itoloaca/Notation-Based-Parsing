@@ -1,0 +1,21 @@
+svn up
+svn st
+//-M immt-api/build.xml
+//svn revert immt-api/build.xml
+//cd marpa-mmt
+//? file.scala
+//svn add file.scala
+svn ci -m "updated marpa"
+
+//to update
+git pull in ext/stex
+lmh update
+svn up
+lmh omdoc
+
+docker run -it -p 8181:8181 -p 61613:61613 -p 61614:61614 -v /my/karafDeploy:/opt/karaf/deploy kwarc/sally4-mhw-dev
+
+
+cp ~/Documents/sally4/nnexus/target/mhw-nnexus-1.0.1-SNAPSHOT.jar /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar
+
+/my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar a

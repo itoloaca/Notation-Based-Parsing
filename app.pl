@@ -131,49 +131,48 @@ post '/detect_notations' => sub {
       
       while ($pos< $end) {
          eval {$pos = $recce->resume(); };
-        }
+      }
      
-        my $counter = 0;
-        my $valueList = ();
-        my $value_ref = \'is defined';
-         my $t0 = [gettimeofday];#
-        PROCESS: while (defined $value_ref) {
-          $counter++;
-          last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
-          # print "$counter\n";
-          $value_ref = $recce->value();
-          if (defined $value_ref) {
-            my $actual_value = ${$value_ref};
-    
-             # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-              # p @$actual_value;
-              # print $$actual_events[$i]->[2]; 
-           # p $actual_value if $i==0;
-           
-            my $notations = getNotations($actual_value);
+      my $counter = 0;
+      my $valueList = ();
+      my $value_ref = \'is defined';
+      my $t0 = [gettimeofday];#
+      PROCESS: while (defined $value_ref) {
+        $counter++;
+        last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
+        # print "$counter\n";
+        $value_ref = $recce->value();
+        if (defined $value_ref) {
+          my $actual_value = ${$value_ref};
+  
+           # print "Actual value $counter:", Dumper(\$actual_value),"\n";
+            # p @$actual_value;
+            # print $$actual_events[$i]->[2]; 
+         # p $actual_value if $i==0;
+         
+          my $notations = getNotations($actual_value);
 
-            if (%$notations) {
-              foreach (@{$notations->{$name}}) {
-                my $el = $_;
-                # my $s = $notations->{$name}->[0]->{'position'}->[0];
-                # my $l = $notations->{$name}->[0]->{'position'}->[1];
-                my $s = $el->{'position'}->[0]->[0];
-                my $l = $el->{'position'}->[0]->[1];
-                my $flag = 0;
-                if ($s ==   $start && $l ==  $length) {
-                    foreach (@{$result->{$name}}) {
-                      $flag = 1 if (Compare($_,$el)==1); }
-                    push @{$result->{$name}}, $_ if ($flag == 0);
-                }
+          if (%$notations) {
+            foreach (@{$notations->{$name}}) {
+              my $el = $_;
+              # my $s = $notations->{$name}->[0]->{'position'}->[0];
+              # my $l = $notations->{$name}->[0]->{'position'}->[1];
+              my $s = $el->{'position'}->[0]->[0];
+              my $l = $el->{'position'}->[0]->[1];
+              my $flag = 0;
+              if ($s ==   $start && $l ==  $length) {
+                  foreach (@{$result->{$name}}) {
+                    $flag = 1 if (Compare($_,$el)==1); }
+                  push @{$result->{$name}}, $_ if ($flag == 0);
               }
-            
-            }  
+            }
           }
-        }       
+        }
+      }
   }
 
-
   print Dumper(\$result);
+  
   my $final = {"status" => "OK",
                "payload" => $result,
                "message" => $input};
