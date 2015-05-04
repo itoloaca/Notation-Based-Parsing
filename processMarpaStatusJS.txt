@@ -1,0 +1,34 @@
+for (var key in data["payload"]) {
+				currentJson.rule = key;		
+				currentJson.position = "";
+				currentJson.subrules = "";
+				for (var posHashIndex in data["payload"][key]) {
+					//adding rule positions
+					for (var posArrIndex in data["payload"][key][posHashIndex]["position"]) {
+						currentJson.position += "[";
+						for (var posIndex in data["payload"][key][posHashIndex]["position"][posArrIndex]) {
+							currentJson.position += data["payload"][key][posHashIndex]["position"][posArrIndex][posIndex] + " ";
+						}
+						currentJson.position += "] ";
+					}
+					//adding subrule positions
+					for (var posHashKey in data["payload"][key][posHashIndex]) {
+						if (posHashKey != "position") {
+							for (var posArrIndex in data["payload"][key][posHashIndex][posHashKey]) {
+								currentJson.subrules += posHashKey + ": ";
+								
+								currentJson.subrules += "[";
+								for (var posIndex in data["payload"][key][posHashIndex][posHashKey][posArrIndex]) {
+									currentJson.subrules += data["payload"][key][posHashIndex][posHashKey][posArrIndex][posIndex] + " ";
+								}
+							
+								currentJson.subrules += "]; ";
+							}
+						}
+					}
+				} //end payload key loop
+				
+				var html = $.parseHTML(Mustache.render(template, currentJson));
+				$("#results").append(html);
+			}
+		

@@ -58,7 +58,6 @@ post '/initialize_grammar' => sub {
 };
 
 post '/detect_notations' => sub {
-
   my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
@@ -93,8 +92,8 @@ post '/detect_notations' => sub {
   #Feed the input to the grammar#
   my $length = length $input;
   my $start = 0; #default - zero
-   my $pos = $recce->read( \"$input", $start, $length);
-  my $actual_events = [];
+  my $pos = $recce->read( \"$input", $start, $length);
+  my $actual_events = {};
 
   #Record positions where notations matched#######################################122
   READ: while (1) {
@@ -109,7 +108,10 @@ post '/detect_notations' => sub {
     for (@current_events) {
         my ($start_rule, $length_rule) = $recce->last_completed($_);
         my $last_expression = $recce->substring($start_rule, $length_rule);
-        push @$actual_events, [$pos - length($last_expression),length($last_expression), $_] if ($_ !~ /^argRuleN.*/);
+        # push @$actual_events, [$pos - length($last_expression),length($last_expression), $_] if ($_ !~ /^argRuleN.*/);
+        if ($_ !~ /^argRuleN.*/) {
+          push @{$actual_events->{$_}}, [$pos - length($last_expression), length($last_expression)];
+        }
     }
     last READ if $pos >= $length;
     eval {$pos = $recce->resume(); };
@@ -117,91 +119,91 @@ post '/detect_notations' => sub {
   } ## end READ: while (1)
 
   print "Actual events: ",Dumper($actual_events);
-
-  # #GET ARGUMENT POSITIONS###################################################################################
-  my $result = {};
-  for (my $i = 0; $i < scalar(@$actual_events); $i++) {
-   
-    # print " ####################".$$actual_events[$i]->[2]." ###################\n";
-      my ($start, $length, $name)= @{$$actual_events[$i]};
-      my $end = $start + $length;
-       
-      my $recce = Marpa::R2::Scanless::R->new({ grammar => $grammar, semantics_package => 'My_Actions' } )  ;
-      my $pos = $recce->read(\"$input", $start, $length);
-      
-      while ($pos< $end) {
-         eval {$pos = $recce->resume(); };
-      }
-     
-      my $counter = 0;
-      my $valueList = ();
-      my $value_ref = \'is defined';
-      my $t0 = [gettimeofday];#
-      PROCESS: while (defined $value_ref) {
-        $counter++;
-        last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
-        # print "$counter\n";
-        $value_ref = $recce->value();
-        if (defined $value_ref) {
-          my $actual_value = ${$value_ref};
-  
-           # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-            # p @$actual_value;
-            # print $$actual_events[$i]->[2]; 
-         # p $actual_value if $i==0;
-         
-          my $notations = getNotations($actual_value);
-
-          if (%$notations) {
-            foreach (@{$notations->{$name}}) {
-              my $el = $_;
-              # my $s = $notations->{$name}->[0]->{'position'}->[0];
-              # my $l = $notations->{$name}->[0]->{'position'}->[1];
-              my $s = $el->{'position'}->[0]->[0];
-              my $l = $el->{'position'}->[0]->[1];
-              my $flag = 0;
-              if ($s ==   $start && $l ==  $length) {
-                  foreach (@{$result->{$name}}) {
-                    $flag = 1 if (Compare($_,$el)==1); }
-                  push @{$result->{$name}}, $_ if ($flag == 0);
-              }
-            }
-          }
-        }
-      }
-  }
-
-  print Dumper(\$result);
-  
   my $final = {"status" => "OK",
-               "payload" => $result,
+               "payload" => $actual_events,
                "message" => $input};
-  # my $final = {"status" => "OK",
-  #              "payload" =>  
-  #              {
-  #                          '_pair_twodimN600' => [
-  #                                                {
-  #                                                  'position' => [
-  #                                                                  [
-  #                                                                    49,
-  #                                                                    33
-  #                                                                  ]
-  #                                                                ],
-  #                                                  'argRuleN600A1Arg' => [
-  #                                                                        [
-  #                                                                          55,
-  #                                                                          10
-  #                                                                        ]
-  #                                                                      ]
-  #                                                }
-  #                                              ]
-  #             },
-  #              "message" => "No obvious problems"};
   my $json = encode_json $final;
   # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
   $self->render(text=> $json);
 };
 
+post '/get_arguments' => sub {
+  my $self = shift;
+  my @post_params = $self->req->body_params->params || [];
+  print "POST PARAMS = \n";
+  p @post_params;
+  print "\nEND_POST_PARAMS\n";
+  my $post_data = $post_params[0][1];
+  my $input = $post_data;
+  # my $input = $input3; 
+  my $temp = $input;
+  print "\$input =$ input \n";
+  #Take away whitespaces around tags
+  $input =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
+  print "Trimmed input: \n$input \n" if ($temp ne $input);
+  
+  # #GET ARGUMENT POSITIONS###################################################################################
+  my $name = $post_params[0][3];
+  my $start = $post_params[0][5];
+  my $length = $post_params[0][7];
+  
+  my $result = {};
+  my $end = $start + $length;
+   
+  my $recce = Marpa::R2::Scanless::R->new({ grammar => $grammar, semantics_package => 'My_Actions' } )  ;
+  my $pos = $recce->read(\"$input", $start, $length);
+  
+  while ($pos < $end) {
+     eval { $pos = $recce->resume(); };
+  }
+ 
+  my $counter = 0;
+  my $valueList = ();
+  my $value_ref = \'is defined';
+  my $t0 = [gettimeofday];#
+  PROCESS: while (defined $value_ref) {
+    $counter++;
+    last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
+    # print "$counter\n";
+    $value_ref = $recce->value();
+    if (defined $value_ref) {
+      my $actual_value = ${$value_ref};
+
+       # print "Actual value $counter:", Dumper(\$actual_value),"\n";
+        # p @$actual_value;
+        # print $$actual_events[$i]->[2]; 
+     # p $actual_value if $i==0;
+     
+      my $notations = getNotations($actual_value);
+
+      if (%$notations) {
+        foreach (@{$notations->{$name}}) {
+          my $el = $_;
+          # my $s = $notations->{$name}->[0]->{'position'}->[0];
+          # my $l = $notations->{$name}->[0]->{'position'}->[1];
+          my $s = $el->{'position'}->[0]->[0];
+          my $l = $el->{'position'}->[0]->[1];
+          my $flag = 0;
+          if ($s ==   $start && $l ==  $length) {
+              foreach (@{$result->{$name}}) {
+                $flag = 1 if (Compare($_,$el)==1); }
+              push @{$result->{$name}}, $_ if ($flag == 0);
+          }
+        }
+      }
+    }
+  }
+  #Print results of /get_arguments
+  print Dumper(\$result);
+  my $final = {"status" => "OK",
+               "payload" => $result,
+               "message" => $input};
+  my $json = encode_json $final;
+  # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
+  $self->render(text=> $json);
+};
+
+#FUNCTION FOR NOTATION/ARGUMENT PROCESSING
 sub getNotations {
   my ($rule) = @_;
   my $name = $rule->[0];
@@ -239,3 +241,25 @@ sub extractArgs {
 }
 
 app->start;
+
+# my $final = {"status" => "OK",
+#              "payload" =>  
+#              {
+#                          '_pair_twodimN600' => [
+#                                                {
+#                                                  'position' => [
+#                                                                  [
+#                                                                    49,
+#                                                                    33
+#                                                                  ]
+#                                                                ],
+#                                                  'argRuleN600A1Arg' => [
+#                                                                        [
+#                                                                          55,
+#                                                                          10
+#                                                                        ]
+#                                                                      ]
+#                                                }
+#                                              ]
+#             },
+#              "message" => "No obvious problems"};

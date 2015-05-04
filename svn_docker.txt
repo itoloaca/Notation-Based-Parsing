@@ -13,8 +13,15 @@ lmh update
 svn up
 lmh omdoc
 
+//First run
+
 docker run -it -p 8181:8181 -p 61613:61613 -p 61614:61614 -v /my/karafDeploy:/opt/karaf/deploy kwarc/sally4-mhw-dev
 
+//Next runs
+
+docker ps -a
+
+docker start -ai <instance-name>
 
 cp ~/Documents/sally4/nnexus/target/mhw-nnexus-1.0.1-SNAPSHOT.jar /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar
 
