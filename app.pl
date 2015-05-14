@@ -34,11 +34,6 @@ post '/initialize_grammar' => sub {
   if ($flag) {
     $flag = 0;
     my $post_params = $self->req->body_params->params || [];
-    # while (my ($key,$value) = splice(@$post_params,0,2)) {
-    #   if ($key eq 'rule') {
-    #     create_rule($value);
-    #   }
-    # }
     my $content = '{"a" : "b"}' ;
     my $ua = LWP::UserAgent->new;
     my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
@@ -156,7 +151,7 @@ post '/get_arguments' => sub {
   while ($pos < $end) {
      eval { $pos = $recce->resume(); };
   }
- 
+
   my $counter = 0;
   my $valueList = ();
   my $value_ref = \'is defined';
@@ -164,29 +159,21 @@ post '/get_arguments' => sub {
   PROCESS: while (defined $value_ref) {
     $counter++;
     last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
-    # print "$counter\n";
     $value_ref = $recce->value();
     if (defined $value_ref) {
       my $actual_value = ${$value_ref};
-
-       # print "Actual value $counter:", Dumper(\$actual_value),"\n";
-        # p @$actual_value;
-        # print $$actual_events[$i]->[2]; 
-     # p $actual_value if $i==0;
-     
       my $notations = getNotations($actual_value);
 
       if (%$notations) {
         foreach (@{$notations->{$name}}) {
           my $el = $_;
-          # my $s = $notations->{$name}->[0]->{'position'}->[0];
-          # my $l = $notations->{$name}->[0]->{'position'}->[1];
           my $s = $el->{'position'}->[0]->[0];
           my $l = $el->{'position'}->[0]->[1];
           my $flag = 0;
           if ($s ==   $start && $l ==  $length) {
               foreach (@{$result->{$name}}) {
-                $flag = 1 if (Compare($_,$el)==1); }
+                $flag = 1 if (Compare($_,$el)==1); 
+              }
               push @{$result->{$name}}, $_ if ($flag == 0);
           }
         }
@@ -199,7 +186,7 @@ post '/get_arguments' => sub {
                "payload" => $result,
                "message" => $input};
   my $json = encode_json $final;
-  # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
+  #my $str={"status":"OK","payload":[],"message":"No obvious problems."}
   $self->render(text=> $json);
 };
 
