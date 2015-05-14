@@ -183,7 +183,8 @@ post '/get_arguments' => sub {
   #Print results of /get_arguments
   print Dumper(\$result);
   my $final = {"status" => "OK",
-               "payload" => $result,
+               "payload" => $result->{$name},
+               "key" => $name,
                "message" => $input};
   my $json = encode_json $final;
   #my $str={"status":"OK","payload":[],"message":"No obvious problems."}
