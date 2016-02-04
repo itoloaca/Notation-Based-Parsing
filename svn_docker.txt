@@ -1,3 +1,8 @@
+itoloaca@lenovo:~/android/android-studio/bin echo $JAVA_HOME
+/usr/lib/jvm/java-7-openjdk-amd64/jre
+
+java -cp "main/marpa-mmt.jar:mmt.jar" info.kwarc.mmt.api.frontend.Run --shell --file /home/itoloaca/localmh/MathHub/serve.msl
+
 svn up
 svn st
 //-M immt-api/build.xml
