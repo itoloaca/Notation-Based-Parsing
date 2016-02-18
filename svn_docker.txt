@@ -31,3 +31,16 @@ docker start -ai <instance-name>
 cp ~/Documents/sally4/nnexus/target/mhw-nnexus-1.0.1-SNAPSHOT.jar /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar
 
 /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar a
+
+
+// From build.sbt
+val marpaJars = Seq(
+	"mhw-nnexus-1.0.1-SNAPSHOT.jar"
+)
+
+lazy val marpa = (project in file("marpa-mmt")).
+  dependsOn(planetary).
+  settings(commonSettings("marpa-mmt"): _*).
+  settings(
+  	unmanagedJars in Compile ++= marpaJars map (baseDirectory.value / "lib" / _)
+  )
