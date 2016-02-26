@@ -76,17 +76,17 @@ archive smglom/topology relational
 archive smglom/mv relational
 
 
-archive smglom/numberfields check
-archive smglom/algebra check
-archive smglom/calculus check
-archive smglom/geometry check
-archive smglom/graphs check
-archive smglom/magic check
-archive smglom/sets check
-archive smglom/topology check
-archive smglom/mv check
-archive smglom/smglom check
-archive smglom/primes check
+//archive smglom/numberfields check
+//archive smglom/algebra check
+//archive smglom/calculus check
+//archive smglom/geometry check
+//archive smglom/graphs check
+//archive smglom/magic check
+//archive smglom/sets check
+//archive smglom/topology check
+//archive smglom/mv check
+//archive smglom/smglom check
+//archive smglom/primes check
 
 
 //algebra   geometry  linear-algebra  mv            numbers  sets    topology

@@ -19,8 +19,12 @@ svn up
 lmh omdoc
 
 //First run
-
+Ubuntu:
 docker run -it -p 8181:8181 -p 61613:61613 -p 61614:61614 -v /my/karafDeploy:/opt/karaf/deploy kwarc/sally4-mhw-dev
+
+OS X:
+docker run -it -p 8181:8181 -p 61613:61613 -p 61614:61614 -v /Users/toloacaion/kwarc/karafDeploy:/opt/karaf/deploy kwarc/sally4-mhw-dev
+
 
 //Next runs
 
