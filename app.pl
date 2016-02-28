@@ -20,8 +20,7 @@ use Encode;
 use Data::Printer;
 use Data::Compare;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
-                      clock_gettime clock_getres clock_nanosleep clock
-                      stat lstat );
+                        clock stat  );
 binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning 
 use Mojolicious::Lite;
 require LWP::UserAgent;
@@ -33,7 +32,7 @@ post '/initialize_grammar' => sub {
   my $self = shift;
   if ($flag) {
     $flag = 0;
-    my $post_params = $self->req->body_params->params || [];
+    # my $post_params = $self->req->body_params->pairs || [];
     my $content = '{"a" : "b"}' ;
     my $ua = LWP::UserAgent->new;
     my $req = POST 'http://localhost:8081/:marpa/getGrammar?=';    
@@ -56,7 +55,23 @@ post '/detect_notations' => sub {
   my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
-  my @post_params = $self->req->body_params->params || [];
+  
+  # my $body_params = $self->req->body_params;
+  # print "Body params\n";
+  # p $body_params;
+
+  # print "-> param \n";
+  # p $body_params->param;
+  #   print "-> every_param \n";
+  # p $body_params->every_param;
+  # print "-> pairs \n";
+  # p $body_params->pairs;
+  #   print "-> parse \n";
+  # p $body_params->parse;
+  #   print "-> to_hash \n";
+  # p $body_params->to_hash;
+
+  my @post_params = $self->req->body_params->pairs || [];
   print "POST PARAMS = \n";
   p @post_params;
   print "\nEND_POST_PARAMS\n";
@@ -124,7 +139,7 @@ post '/detect_notations' => sub {
 
 post '/get_arguments' => sub {
   my $self = shift;
-  my @post_params = $self->req->body_params->params || [];
+  my @post_params = $self->req->body_params->pairs || [];
   print "POST PARAMS = \n";
   p @post_params;
   print "\nEND_POST_PARAMS\n";

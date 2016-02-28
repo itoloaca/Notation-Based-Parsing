@@ -27,15 +27,22 @@ docker run -it -p 8181:8181 -p 61613:61613 -p 61614:61614 -v /Users/toloacaion/k
 
 
 //Next runs
-
 docker ps -a
-
 docker start -ai <instance-name>
+
+//Reset env
+docker-machine restart default
+eval $(docker-machine env default)
 
 cp ~/Documents/sally4/nnexus/target/mhw-nnexus-1.0.1-SNAPSHOT.jar /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar
 
+cp sally4/nnexus/target/mhw-nnexus-1.0.1-SNAPSHOT.jar karafDeploy/
+
 /my/karafDeploy/mhw-nnexus-1.0.1-SNAPSHOT.jar a
 
+// add to .bashrc in karaf vm
+export JAVA_HOME=/opt/java
+export PATH=$PATH:/opt/java/bin:/opt/karaf/bin
 
 // From build.sbt
 val marpaJars = Seq(
