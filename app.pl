@@ -48,7 +48,8 @@ post '/initialize_grammar' => sub {
     $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
     # p $dsl;
   }
-  $self->render(text=>'success');
+  $self->res->headers->header('Access-Control-Allow-Origin' => '*');
+  $self->render(text => 'success');
 };
 
 post '/detect_notations' => sub {
@@ -75,7 +76,7 @@ post '/detect_notations' => sub {
   print "POST PARAMS = \n";
   p @post_params;
   print "\nEND_POST_PARAMS\n";
-  my $post_data = $post_params[0][1];
+  my $post_data = $post_params[0][0];
   # #Input from XML
   # use Mojo::DOM;
   # open FILEHANDLE, 'html_math_test.html' or die $!;
@@ -134,6 +135,7 @@ post '/detect_notations' => sub {
                "message" => $input};
   my $json = encode_json $final;
   # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
+  $self->res->headers->header('Access-Control-Allow-Origin' => '*');
   $self->render(text=> $json);
 };
 
@@ -173,7 +175,7 @@ post '/get_arguments' => sub {
   my $t0 = [gettimeofday];#
   PROCESS: while (defined $value_ref) {
     $counter++;
-    last PROCESS if $counter>50;  #BEST VALUE TO BE DETERMINED
+    last PROCESS if $counter>100;  #BEST VALUE TO BE DETERMINED
     $value_ref = $recce->value();
     if (defined $value_ref) {
       my $actual_value = ${$value_ref};
@@ -196,6 +198,7 @@ post '/get_arguments' => sub {
     }
   }
   #Print results of /get_arguments
+  print "Get_arguments:";
   print Dumper(\$result);
   my $final = {"status" => "OK",
                "payload" => $result->{$name},
@@ -203,6 +206,7 @@ post '/get_arguments' => sub {
                "message" => $input};
   my $json = encode_json $final;
   #my $str={"status":"OK","payload":[],"message":"No obvious problems."}
+  $self->res->headers->header('Access-Control-Allow-Origin' => '*');
   $self->render(text=> $json);
 };
 
