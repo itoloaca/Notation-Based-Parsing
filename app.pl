@@ -24,10 +24,26 @@ use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
 binmode STDOUT, ':utf8'; #to get rid of "Wide character print at..." warning 
 use Mojolicious::Lite;
 require LWP::UserAgent;
-
+use URI::Escape::XS;
+use URI::Escape;
 my $dsl;
 my $grammar;
 my $flag = 1;
+
+
+sub encodeAllURIComponents {
+    my ($str) = @_;
+    my @chars = split //, $str;
+    @chars = map { encodeURIComponent($_) } @chars; 
+    return join('', @chars);
+}
+
+
+sub decodeAllURIComponents {
+    my ($str) = @_;
+    return uri_unescape($str);
+}
+
 post '/initialize_grammar' => sub {
   my $self = shift;
   if ($flag) {
@@ -93,7 +109,7 @@ post '/detect_notations' => sub {
   # ###################################################################################################
   # #Choose input 1-file, 2-xml, 3-html
   # print "\nInput3\n$input3\nEND\n";
-  my $input = $post_data;
+  my $input = decodeAllURIComponents($post_data);
   # my $input = $input3; 
   my $temp = $input;
   print "\$input =$ input \n";
@@ -146,6 +162,9 @@ post '/get_arguments' => sub {
   p @post_params;
   print "\nEND_POST_PARAMS\n";
   my $post_data = $post_params[0][1];
+  p $post_data;
+  $post_data = decodeAllURIComponents($post_data);
+  p $post_data;
   my $input = $post_data;
   # my $input = $input3; 
   my $temp = $input;
@@ -179,10 +198,11 @@ post '/get_arguments' => sub {
     $value_ref = $recce->value();
     if (defined $value_ref) {
       my $actual_value = ${$value_ref};
-      my $notations = getNotations($actual_value);
 
-      if (%$notations) {
-        foreach (@{$notations->{$name}}) {
+      my $notations = getNotations($actual_value);
+      p $notations;
+      if (%$notations) {   
+        foreach (@{$notations->{$name}}) { 
           my $el = $_;
           my $s = $el->{'position'}->[0]->[0];
           my $l = $el->{'position'}->[0]->[1];
@@ -199,7 +219,7 @@ post '/get_arguments' => sub {
   }
   #Print results of /get_arguments
   print "Get_arguments:";
-  print Dumper(\$result);
+  p $result;
   my $final = {"status" => "OK",
                "payload" => $result->{$name},
                "key" => $name,
