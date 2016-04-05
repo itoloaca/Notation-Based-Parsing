@@ -26,10 +26,11 @@ use Mojolicious::Lite;
 require LWP::UserAgent;
 use URI::Escape::XS;
 use URI::Escape;
+
 my $dsl;
 my $grammar;
 my $flag = 1;
-
+my $global_input = "";
 
 sub encodeAllURIComponents {
     my ($str) = @_;
@@ -72,52 +73,24 @@ post '/detect_notations' => sub {
   my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
-  
-  # my $body_params = $self->req->body_params;
-  # print "Body params\n";
-  # p $body_params;
-
-  # print "-> param \n";
-  # p $body_params->param;
-  #   print "-> every_param \n";
-  # p $body_params->every_param;
-  # print "-> pairs \n";
-  # p $body_params->pairs;
-  #   print "-> parse \n";
-  # p $body_params->parse;
-  #   print "-> to_hash \n";
-  # p $body_params->to_hash;
-
   my @post_params = $self->req->body_params->pairs || [];
   print "POST PARAMS = \n";
   p @post_params;
   print "\nEND_POST_PARAMS\n";
   my $post_data = $post_params[0][0];
-  # #Input from XML
-  # use Mojo::DOM;
-  # open FILEHANDLE, 'html_math_test.html' or die $!;
-  # my $content1 = do { local $/; <FILEHANDLE> };
-  # my $dom1 = Mojo::DOM->new($content1);
-  # $dom1->xml(0); #enforce html 
-  # my @math = $dom1->find('math')->each;
-  # foreach (@math) {
-  #   $_ = $_ -> to_string;
-  #   $_ = decode("UTF-8", encode("UTF-8", $_));
-  # }
-  # my $index2 = 73;
-  # my $input3 = $math[$index2];
-  # ###################################################################################################
-  # #Choose input 1-file, 2-xml, 3-html
-  # print "\nInput3\n$input3\nEND\n";
-  my $input = decodeAllURIComponents($post_data);
-  # my $input = $input3; 
+  
+  my $input = $post_data;
+
   my $temp = $input;
   print "\$input =$ input \n";
   #Take away whitespaces around tags
   $input =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
+
+  $global_input = $input; #SAVE INPUT FOR GET ARGUMENTS QUERY
   print "Trimmed input: \n$input \n" if ($temp ne $input);
   #Feed the input to the grammar#
   my $length = length $input;
+  print "Length of input: $length \n";
   my $start = 0; #default - zero
   my $pos = $recce->read( \"$input", $start, $length);
   my $actual_events = {};
@@ -148,7 +121,7 @@ post '/detect_notations' => sub {
   print "Actual events: ",Dumper($actual_events);
   my $final = {"status" => "OK",
                "payload" => $actual_events,
-               "message" => $input};
+               "message" => encodeURIComponent($input)  };
   my $json = encode_json $final;
   # my$str={"status":"OK","payload":[],"message":"No obvious problems."}
   $self->res->headers->header('Access-Control-Allow-Origin' => '*');
@@ -161,19 +134,21 @@ post '/get_arguments' => sub {
   print "POST PARAMS = \n";
   p @post_params;
   print "\nEND_POST_PARAMS\n";
-  my $post_data = $post_params[0][1];
-  p $post_data;
-  $post_data = decodeAllURIComponents($post_data);
-  p $post_data;
-  my $input = $post_data;
+  # my $input = $post_params[0][1];
+  my $input = $global_input;
+
+  p $input;
   # my $input = $input3; 
   my $temp = $input;
-  print "\$input =$ input \n";
+  #print "\$input =$ input \n";
   #Take away whitespaces around tags
   $input =~ s/\s*(<\/?[^<>\s]*(?:\s*[^=<>]+\s*="[^"]*"\s*)*>)\s*/$1/g;
-  print "Trimmed input: \n$input \n" if ($temp ne $input);
+  print "Trimmed input: \n$input \n";
+  p $input;
+  my $input_len = length $input;
+  print "Length of input: $input_len \n";
   
-  # #GET ARGUMENT POSITIONS###################################################################################
+  ## GET ARGUMENT POSITIONS
   my $name = $post_params[0][3];
   my $start = $post_params[0][5];
   my $length = $post_params[0][7];
@@ -223,7 +198,7 @@ post '/get_arguments' => sub {
   my $final = {"status" => "OK",
                "payload" => $result->{$name},
                "key" => $name,
-               "message" => $input};
+               "message" => encodeURIComponent($input) };
   my $json = encode_json $final;
   #my $str={"status":"OK","payload":[],"message":"No obvious problems."}
   $self->res->headers->header('Access-Control-Allow-Origin' => '*');
@@ -255,7 +230,7 @@ sub getNotations {
 sub extractArgs {
   my ($rule) = @_;
   my $result = {};
-  push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2]] if ($rule->[0] =~ /^argRuleN.*/);
+  push @{$result->{$rule->[0]}}, [$rule->[1], $rule->[2], encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]))] if ($rule->[0] =~ /^argRuleN.*/);
   for (my $i = 3; $i < scalar(@$rule); $i++) {
       if (ref $rule->[$i] eq 'ARRAY' &&  $rule->[$i]->[0] !~ /N\d+$/) {
           my %temp = %{extractArgs($rule->[$i])};
