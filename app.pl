@@ -109,7 +109,8 @@ post '/detect_notations' => sub {
         my $last_expression = $recce->substring($start_rule, $length_rule);
         # push @$actual_events, [$pos - length($last_expression),length($last_expression), $_] if ($_ !~ /^argRuleN.*/);
         if ($_ !~ /^argRuleN.*/) {
-          push @{$actual_events->{$_}}, [$pos - length($last_expression), length($last_expression)];
+          my $str = encodeURIComponent(substr($global_input, $pos - length($last_expression), length($last_expression)));
+          push @{$actual_events->{$_}}, [$pos - length($last_expression), length($last_expression), $str];
         }
     }
     last READ if $pos >= $length;
