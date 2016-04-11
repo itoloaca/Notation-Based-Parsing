@@ -31,6 +31,7 @@ my $dsl;
 my $grammar;
 my $flag = 1;
 my $global_input = "";
+my $grammar_init = 0;
 
 sub encodeAllURIComponents {
     my ($str) = @_;
@@ -45,8 +46,7 @@ sub decodeAllURIComponents {
     return uri_unescape($str);
 }
 
-post '/initialize_grammar' => sub {
-  my $self = shift;
+sub initialize_grammar {
   if ($flag) {
     $flag = 0;
     # my $post_params = $self->req->body_params->pairs || [];
@@ -65,11 +65,10 @@ post '/initialize_grammar' => sub {
     $grammar = Marpa::R2::Scanless::G->new( { bless_package => 'Notation', source => \$dsl } );
     # p $dsl;
   }
-  $self->res->headers->header('Access-Control-Allow-Origin' => '*');
-  $self->render(text => 'success');
 };
 
 post '/detect_notations' => sub {
+  initialize_grammar;
   my $recce = Marpa::R2::Scanless::R->new(
     { grammar => $grammar, semantics_package => 'My_Actions' } );
   my $self = shift;
