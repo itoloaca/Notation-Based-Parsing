@@ -100,7 +100,7 @@ post '/detect_notations' => sub {
   my $valueList = ();
   my $value_ref = \'is defined';
   my $t0 = [gettimeofday];
-  print "BEFORE LOOP\n";
+
   PROCESS: while (defined $value_ref) {
     $counter++;
     last PROCESS if $counter>100;  #BEST VALUE TO BE DETERMINED
@@ -109,17 +109,11 @@ post '/detect_notations' => sub {
       my $actual_value = ${$value_ref};
 
       my $notations = getNotations($actual_value);
-      print "NOTATIONS\n";
-      p $notations;
+
       if (%$notations) {
         while (my ($k, $values) = each %$notations) {
           foreach(@$values){
               my $v = $_;
-              print "KEY\n";
-              p $k;
-              print "VALUE\n";
-              p $v;
-              print "ENDVAL\n";
               my $flag = 0;
               foreach (@{$payload->{$k}}) {
                 $flag = 1 if (Compare($_, $v) == 1);
@@ -130,7 +124,7 @@ post '/detect_notations' => sub {
       }
     }
   }
-
+  print "PAYLOAD\n";
   p $payload;
   my $final = {"status" => "OK",
                "payload" => $payload,
@@ -148,7 +142,12 @@ sub getNotations {
   my $result = {};
   if ($name =~ /N\d+$/) {
     my $attrib = extractArgs($rule);
-    $attrib->{"position"} = [[$rule->[1],$rule->[2], encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]))]]; 
+    my %hash;
+    $hash{'on'} = encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]));
+    $hash{'before'} = encodeURIComponent(substr($global_input, 0, $rule->[1]));
+    $hash{'after'} = encodeURIComponent(substr($global_input, $rule->[1] + $rule->[2], length($global_input) - $rule->[1] - $rule->[2]));
+
+    $attrib->{"position"} = [[$rule->[1],$rule->[2], %hash]]; 
 
     push @{$result->{$name}}, $attrib; 
   }
