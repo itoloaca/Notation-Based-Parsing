@@ -147,7 +147,7 @@ sub getNotations {
     $hash{'before'} = encodeURIComponent(substr($global_input, 0, $rule->[1]));
     $hash{'after'} = encodeURIComponent(substr($global_input, $rule->[1] + $rule->[2], length($global_input) - $rule->[1] - $rule->[2]));
 
-    $attrib->{"position"} = [[$rule->[1],$rule->[2], %hash]]; 
+    $attrib->{"position"} = [[$rule->[1],$rule->[2], $hash{'on'}, $hash{'before'}, $hash{'after'}]]; 
 
     push @{$result->{$name}}, $attrib; 
   }
