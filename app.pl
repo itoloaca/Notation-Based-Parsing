@@ -70,7 +70,9 @@ sub initialize_grammar {
 post '/detect_notations' => sub {
   initialize_grammar;
   my $recce = Marpa::R2::Scanless::R->new(
-    { grammar => $grammar, semantics_package => 'My_Actions' } );
+    { grammar => $grammar, 
+      semantics_package => 'My_Actions',
+      max_parses => 300 } );                           # VERY IMPORTANT - LIMITS THE TOTAL NUMBER OF PROCESSED PARSE TREES
   my $self = shift;
   my @post_params = $self->req->body_params->pairs || [];
   print "POST PARAMS = \n";
@@ -92,9 +94,15 @@ post '/detect_notations' => sub {
   print "Length of input: $length \n";
   my $start = 0; #default - zero
   my $pos = $recce->read( \"$input", $start, $length);
+  print "recce->read completed\n";
   my $end = $start + $length;
-  while ($pos < $end) { eval { $pos = $recce->resume(); }; }
-
+  my $index = 0;
+  RESUME: while ($pos < $end) { 
+    $index = $index + 1;
+    last RESUME if $index > 3000; # VERY IMPORTANT - LIMITS THE TOTAL NUMBER OF ITERATIONS TO AVOID INFINITE LOOPING
+    eval { $pos = $recce->resume(); }; 
+  }
+  print "recce->resume completed\n";
   my $payload = {};
   my $counter = 0;
   my $valueList = ();
@@ -103,7 +111,6 @@ post '/detect_notations' => sub {
 
   PROCESS: while (defined $value_ref) {
     $counter++;
-    last PROCESS if $counter>100;  #BEST VALUE TO BE DETERMINED
     $value_ref = $recce->value();
     if (defined $value_ref) {
       my $actual_value = ${$value_ref};
@@ -142,12 +149,9 @@ sub getNotations {
   my $result = {};
   if ($name =~ /N\d+$/) {
     my $attrib = extractArgs($rule);
-    my %hash;
-    $hash{'on'} = encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]));
-    $hash{'before'} = encodeURIComponent(substr($global_input, 0, $rule->[1]));
-    $hash{'after'} = encodeURIComponent(substr($global_input, $rule->[1] + $rule->[2], length($global_input) - $rule->[1] - $rule->[2]));
-
-    $attrib->{"position"} = [[$rule->[1],$rule->[2], $hash{'on'}, $hash{'before'}, $hash{'after'}]]; 
+    my $str = encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]));
+   
+    $attrib->{"position"} = [[$rule->[1],$rule->[2], $str]]; 
 
     push @{$result->{$name}}, $attrib; 
   }
