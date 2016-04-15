@@ -152,8 +152,9 @@ sub getNotations {
     my $str = encodeURIComponent(substr($global_input, $rule->[1], $rule->[2]));
    
     $attrib->{"position"} = [[$rule->[1],$rule->[2], $str]]; 
-
-    push @{$result->{$name}}, $attrib; 
+    if ($rule->[1] == 0 && $rule->[2] == length $global_input) {
+      push @{$result->{$name}}, $attrib; 
+    }
   }
   for (my $i = 3; $i < scalar(@$rule); $i++) {
     if (ref $rule->[$i] eq 'ARRAY') {
