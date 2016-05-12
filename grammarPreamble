@@ -1,0 +1,48 @@
+#GRAMMAR ENTRY POINT
+:default ::= action => [name, start, length, values]
+lexeme default = latm => 1
+:start ::= Expression 
+ExpressionList ::= Expression+
+Expression ::= Presentation   
+             | Notation  
+
+#Notation Precedences             
+Notation ::= prec0 
+prec0 ::= prec1 | #Rules with precedence zero
+prec1 ::= prec2 | #Rules with precedence one
+...
+
+#Argument Precedences (depends on the number of precedences)
+argRuleP0 ::= prec0 | Presentation 
+argRuleP1 ::= prec1 | Presentation 
+argRuleP2 ::= prec2 | Presentation 
+...
+
+#Presentation MathML
+Presentation ::= mrowB Notation mrowE 
+ | mrowB ExpressionList mrowE 
+ | moB '(' moE ExpressionList moB ')' moE 
+ | moB text moE 
+ | miB text miE 
+ | mnB text mnE 
+ ...
+
+#Presentation MathML Parts
+mrowB ::=  '<mrow' attribs '>' 
+mrowE ::=  '</mrow>' 
+mathB ::=  '<math' attribs '>' 
+mathE ::=  '</math>' 
+miB ::=  '<mi' attribs '>' 
+miE ::=  '</mi>' 
+...
+
+#Lexemes
+ws ::= spaces
+spaces ~ space+
+space ~ [\s] 
+text ::= textRule
+textRule::= char | char textRule
+char ~ [^<>]
+...
+
+
